@@ -1,0 +1,735 @@
+/*style for the List of Areas Page*/
+#page-name {
+	margin-top: 20px;
+	font-size: 25px;
+	width: 100%;
+	height: 60px;
+	font-family: Arial Black;
+	text-align: center;
+	background-color: white;
+}
+#container {
+	border-top: 2px solid #414146;
+	border-bottom: 2px solid #414146;
+	width: 100%;
+	height: 430px;
+}
+#controls {
+	float: left;
+	height: 430px;
+	width: 22%;
+}
+#control-name{
+	border-bottom: 2px solid #daefff;
+	padding-left: 20px;
+	padding-top: 10px;
+	height: 28px;
+	width: auto;
+	font-family: Arial Black;
+	color: #5f5b58;
+}
+#controls ul{
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+#controls ul li a {
+	display: block;
+	text-decoration: none;
+	color: #7c9306;
+	background: url('../images/arrow_white.png') no-repeat right rgba(255,255,255,1);
+	background-size: 20px 30px;
+	border-bottom: 2px solid #daefff;
+	padding-left: 70px;
+	padding-top: 10px;
+	height: 30px;
+	width: auto;
+	font-family: Arial Black;
+}
+#lists {
+	float: left;
+	height: 430px;
+	width: 77.5%;
+}
+#lists-name {
+	padding-top: 10px;
+	padding-left: 20px;
+	height: 30px;
+	width: auto;
+	color: #5f5b58;
+	font-family: Arial Black;
+}
+#lists-container {
+	height: 390px;
+	width: auto;
+}
+#search-form form{
+	float: left;
+}
+#search-form {
+	margin-left: 40px;
+	padding: 10px;
+	height: 30px;
+	width: 700px;
+}
+#search-form input[type="text"]{
+	border: 1px solid #414146;
+	font-family: Arial;
+	font-size: 17px;
+	height: 20px;
+}
+#search-form input[type="submit"] {
+	font-family: Arial;
+	font-size: 15px;
+	height: 25px;
+}
+#pagination {
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	margin-left: 50px;
+	padding-top: 5px;
+	height: 30px;
+	width: 400px;
+}
+#pagination ul{
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+#pagination ul li{
+	float: left;
+	display: inline;
+	margin-right: 5px;
+}
+#pagination ul li.page {
+	border: 1px solid #414146;
+	border-radius: 3px;
+	text-align: center;
+	padding: 3px;
+	height: 15px;
+	width: 20px;
+}
+#pagination ul li.page.selected {
+	background-color: #578bb1;
+}
+#pagination ul li.page.selected a {
+	color: white;
+}
+#pagination ul li.previous, #pagination ul li.next{
+	border: 1px solid #414146;
+	border-radius: 3px;
+	text-align: center;
+	padding: 3px;
+	height: 15px;
+	width: 68px;
+}
+#pagination ul li.previous.hidden a, #pagination ul li.next.hidden a{
+	color: #84ccef;
+}
+#pagination ul li a{
+	text-decoration: none;
+	color: #0070c2;
+	display: block;
+}
+#search-result {
+	padding-left: 50px;
+	padding-top: 10px;
+	height: 300px;
+	width: auto;
+	font-family: Arial;
+	font-size: 15px;
+}
+#search-result table {
+	border: 1px solid #7e7e7e;
+	background-color: #f5f5f5;
+	border-collapse: collapse;
+	width: 950px;
+}
+#search-result th{
+	border: 1px solid #7e7e7e;
+	padding: 5px;
+}
+#search-result th:nth-of-type(1) {
+	width: 200px;
+}
+#search-result th:nth-of-type(2) {
+	width: 300px;
+}
+#search-result th:nth-of-type(3) {
+	width: 250px;
+}
+#search-result th:nth-of-type(4) {
+	width: 100px;
+}
+#search-result th:nth-of-type(5) {
+	width: 100px;
+}
+#search-result td {
+	border: 1px solid #7e7e7e;
+	background-color: white;
+	text-align: center;
+	padding: 10px;
+}
+#show-result tr td input[type="submit"]{
+	width: 80px;
+}
+#no-records {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 20px;
+}
+/*style for the List of Areas Page*/
+
+/*style for Flash Messages*/
+.addarea-flash-message{
+	border-radius: 5px;
+	padding-left: 35px;
+	padding-top: 10px;
+	margin-left: 220px;
+	font-family: Arial;
+	height: 25px;
+	width: 365px;
+	position: absolute;
+	top: 200px;
+	z-index: 100;
+}
+#success-flash {
+	background: url('../images/success.png') no-repeat left rgba(233, 233, 233, 0.7);
+	background-position: 5px center;
+	background-size: 25px 25px;
+}
+#failed-flash {
+	background: url('../images/warning.png') no-repeat left rgba(233, 233, 233, 0.7);
+	background-position: 5px center;
+	background-size: 25px 25px;
+}
+.editarea-flash-message {
+	background: url('../images/success.png') no-repeat left rgba(233, 233, 233, 0.7);
+	background-position: 5px center;
+	background-size: 25px 25px;
+	border-radius: 5px;
+	padding-left: 35px;
+	padding-top: 10px;
+	margin-left: 340px;
+	font-family: Arial;
+	height: 25px;
+	width: 365px;
+	position: absolute;
+	top: 250px;
+	z-index: 100;
+}
+#page-number-indicator {
+	color: #3a4045;
+	font-family: Arial;
+	font-weight: bold;
+	float: left;
+	padding-top: 10px;
+	margin-left: 30px;
+	height: 25px;
+	width: 130px;
+}
+#addmeasure-flash-message-container {
+	height: 35px;
+	width: auto;
+}
+.addmeasure-flash-message {
+	float: left;
+	background: url('../images/success.png') no-repeat left rgba(233, 233, 233, 0.7);
+	background-position: 5px center;
+	background-size: 25px 25px;
+	border-radius: 5px;
+	padding-left: 35px;
+	padding-top: 10px;
+	margin-left: 20px;
+	font-family: Arial;
+	height: 25px;
+	width: 365px;
+}
+.editmeasure-flash-message {
+	float: left;
+	background: url('../images/success.png') no-repeat left rgba(233, 233, 233, 0.7);
+	background-position: 5px center;
+	background-size: 25px 25px;
+	border-radius: 5px;
+	padding-left: 35px;
+	padding-top: 10px;
+	margin-left: 20px;
+	font-family: Arial;
+	height: 25px;
+	width: 365px;
+}
+.addrow-flash-message, .addcolumn-flash-message, .deletemeasure-flash-message, .deletearea-flash-message , .createhierarchy-flash-message{
+	float: left;
+	background: url('../images/success.png') no-repeat left rgba(233, 233, 233, 0.7);
+	background-position: 5px center;
+	background-size: 25px 25px;
+	border-radius: 5px;
+	padding-left: 35px;
+	padding-top: 10px;
+	margin-left: 20px;
+	font-family: Arial;
+	height: 25px;
+	width: 365px;
+}
+/*style for Flash Messages*/
+
+/*style for Add New Area Page*/
+#add-form-container {
+	float: left;
+	height: 430px;
+	width: 77.5%;
+}
+#add-form-name {
+	padding-top: 10px;
+	padding-left: 20px;
+	height: 20px;
+	width: auto;
+	font-family: Arial Black;
+	color: #5f5b58;
+}
+#add-form {
+	padding-top: 10px;
+	margin-left: 50px;
+	padding-left: 20px;
+	height: 310px;
+	width: 990px;
+}
+.label {
+	margin-top: 10px;
+	float: left;
+	padding-top: 10px;
+	height: 30px;
+	width: 150px;
+}
+.field {
+	margin-top: 10px;
+	float: left;
+	height: 40px;
+	width: 420px;
+}
+.error-msg {
+	margin-top: 10px;
+	float: left;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	height: 40px;
+	width: 390px;
+}
+#submit {
+	margin-top: 20px;
+	float: left;
+	height: 30px;
+	width: 320px;
+}
+#add-form label{
+	font-family: Arial;
+	font-size: 16px;
+	color: #3a4045;
+}
+#add-form input[type="text"]{
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 25px;
+	width: 400px;
+}
+#add-form input[type="file"] {
+	font-family: Arial;
+	font-size: 15px;
+}
+#add-form input[type="submit"]{
+	height: 30px;
+	width: 150px;
+	font-size: 15px;
+}
+/*style for Add New Area Page*/
+
+/*style for Area Overview Page*/
+#overview-container {
+	float: left;
+	height: 430px;
+	width: 77.5%;
+}
+#overview-name {
+	padding-top: 10px;
+	padding-left: 20px;
+	height: 30px;
+	width: auto;
+	font-family: Arial Black;
+	color: #5f5b58;
+}
+.breadcrumbs a  {
+	text-decoration: none;
+}	
+#overview-data-menu {
+	font-family: Arial;
+	margin-top: 20px;
+	margin-left: 20px;
+	padding-bottom: 5px;
+	height: 35px;
+	width: auto;
+	border-bottom: 1px solid #e2e2e2;
+}
+#overview-data-menu ul{
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+#overview-data-menu ul li a{
+	display: block;
+	height: 30px;
+	width: 140px;
+	text-align: center;
+	color: #7c9306;
+	font-family: Arial;
+	text-decoration: none;
+}
+#overview-data-menu ul li{
+	display: inline;
+	border-right: 2px solid #e2e2e2;
+	text-align: center;
+	height: 25px;
+	width: 140px;
+	float: left;
+	padding-top: 5px;
+}
+#overview-data-area {
+	float: left;
+	font-family: Arial;
+	font-size: 16px;
+	height: 150px;
+	width: 500px;
+	padding-left: 30px;
+}
+.data-label {
+	float: left;
+	color: #3a4045;
+	margin-top: 10px;
+	float: left;
+	padding-top: 10px;
+	height: 30px;
+	width: 150px;
+}
+.data-value {
+	float: left;
+	color: #7c7979;
+	margin-top: 10px;
+	padding-top: 10px;
+	float: left;
+	height: 30px;
+	width: 350px;
+}
+#area-data-logo {
+	margin-top: 20px;
+	margin-right: 300px;
+	float: right;
+	height: 25px;
+	width: 25px;
+}
+#area-data-logo img {
+	height: 150px;
+	width: 150px;
+}
+/*style for Area Overview Page*/
+
+/*style for Edit Area Page*/
+#edit-data-area {
+	padding-left: 30px;
+	height: 310px;
+	width: 970px;
+}
+#edit-data-area label{
+	font-family: Arial;
+	font-size: 16px;
+	color: #3a4045;
+}
+#edit-data-area input[type="text"], #edit-data-area input[type="number"]{
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 25px;
+	width: 400px;
+}
+#edit-data-area select{
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 29px;
+	width: 400px;
+}
+#edit-data-area input[type="file"] {
+	font-family: Arial;
+	font-size: 15px;
+}
+#edit-data-area input[type="submit"]{
+	height: 30px;
+	width: 150px;
+	font-size: 15px;
+}
+/*style for Edit Area Page*/
+
+/*style for Add New Measure*/
+.label {
+	font-family: Arial;
+	margin-top: 10px;
+	float: left;
+	padding-top: 10px;
+	height: 30px;
+	width: 150px;
+}
+.field {
+	margin-top: 10px;
+	float: left;
+	height: 40px;
+	width: 420px;
+}
+.error-msg {
+	margin-top: 10px;
+	float: left;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	height: 40px;
+	width: 390px;
+}
+.add-measure {
+	padding-left: 30px;
+	height: 390px;
+	width: auto;
+}
+.add-measure label{
+	font-family: Arial;
+	font-size: 16px;
+	color: #3a4045;
+}
+.add-measure input[type="text"], .add-measure input[type="number"]{
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 25px;
+	width: 400px;
+}
+.add-measure input[type="file"] {
+	font-family: Arial;
+	font-size: 15px;
+}
+.add-measure input[type="submit"], .add-measure input[type="button"]  {
+	height: 30px;
+	width: 150px;
+	font-size: 15px;
+}
+.text-area-field {
+	margin-top: 10px;
+	float: left;
+	height: 50px;
+	width: 420px;
+}
+.text-area-error-msg {
+	margin-top: 10px;
+	float: left;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	height: 50px;
+	width: 390px;
+}
+.add-measure textarea {
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 50px;
+	width: 398px;
+}
+.add-measure select{
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 29px;
+	width: 200px;
+}
+#data-type-dropdown select {
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 29px;
+	width: 400px;
+}
+.row-header {
+	font-family: Arial;
+	padding-top: 5px;
+	color: #3a4045;
+	float: left;
+	height: 25px;
+	width: 420px;
+}
+.row {
+	width: 420px;
+	height: 55px;
+	float: left;
+}
+.row-field {
+	height: 25px;
+	width: 420px;
+}
+.row-error-msg {
+	margin-top: 5px;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	height: 20px;
+	width: 420px;
+}
+/*style for Add New Measure*/
+
+/*style for list of measures*/
+#measure-search-result {
+	padding-left: 50px;
+	padding-top: 10px;
+	height: 300px;
+	width: auto;
+	font-family: Arial;
+	font-size: 15px;
+}
+#measure-search-result table {
+	border: 1px solid #7e7e7e;
+	background-color: #f5f5f5;
+	border-collapse: collapse;
+	width: 950px;
+}
+#measure-search-result th{
+	border: 1px solid #7e7e7e;
+	padding: 5px;
+}
+#measure-search-result th:nth-of-type(1) {
+	width: 250px;
+}
+#measure-search-result th:nth-of-type(2) {
+	width: 150px;
+}
+#measure-search-result th:nth-of-type(3) {
+	width: 150px;
+}
+#measure-search-result th:nth-of-type(4) {
+	width: 200px;
+}
+#measure-search-result th:nth-of-type(5){
+	width: 100px;
+}
+#measure-search-result th:nth-of-type(6){
+	width: 100px;
+}
+#measure-search-result td {
+	border: 1px solid #7e7e7e;
+	background-color: white;
+	text-align: center;
+	padding: 10px;
+}
+#measure-search-result tr td input[type="submit"]{
+	width: 80px;
+}
+/*style for list of measures*/
+
+/*style for edit measure*/
+.description-label {
+	margin-top: 10px;
+	float: left;
+	padding-top: 10px;
+	height: 30px;
+	width: 150px;
+}
+.description-field {
+	margin-top: 10px;
+	float: left;
+	height: 50px;
+	width: 420px;
+}
+.description-field textarea {
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 50px;
+	width: 398px;
+}
+.description-error-msg {
+	margin-top: 10px;
+	float: left;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	height: 50px;
+	width: 390px;
+}
+/*style for edit measure*/
+
+/*style for delete prompt message*/
+#measure-delete-prompt, #area-delete-prompt {
+	background-color: #babdad;
+	border: 1px solid #414146;
+	position: absolute;
+	display: none;
+	top: 270px;
+	left: 650px;
+	text-align: center;
+	font-family: Arial;
+	font-size: 15px;
+	padding-top: 10px;
+	height: 100px;
+	width: 320px;
+}
+#measure-del {
+	font-weight: bold;
+}
+#measure-delete-prompt button, #area-delete-prompt button{
+	height: 30px;
+	width: 80px;
+}
+/*style for delete prompt message*/
+
+/*style for hierarchy*/
+.rowname-header {
+	font-family: Arial;
+	padding-top: 5px;
+	color: #3a4045;
+	float: left;
+	height: 25px;
+	width: 200px;
+}
+.parent-header {
+	font-family: Arial;
+	padding-top: 5px;
+	color: #3a4045;
+	float: left;
+	height: 25px;
+	width: 700px;
+}
+.hierarchy-label {
+	font-family: Arial;
+	font-size: 16px;
+	color: #3a4045;
+	margin-top: 10px;
+	float: left;
+	padding-top: 10px;
+	height: 30px;
+	width: 200px;
+}
+.hierarchy-field {
+	margin-top: 10px;
+	float: left;
+	height: 40px;
+	width: 600px;
+}
+#parent-hierarchy select{
+	font-family: Arial;
+	border: 1px solid #414146;
+	font-size: 17px;
+	height: 29px;
+	width: 200px;
+}
+/*style for hierarchy*/
