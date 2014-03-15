@@ -81,17 +81,18 @@
 				<div class="parent-header">
 					PARENT COLUMN
 				</div>
-				<?php $i = 0; ?>
 				<?php echo CHtml::beginForm(array('/settings/createcolumnhierarchy?areaid='.($area->area_id).'&measureid='.($measure->measure_id)), 'post'); ?>
-					<?php foreach($column_dimension as $dimension): ?>
+					<?php foreach($model as $i=>$eachmodel): ?>
 						<div class="hierarchy-label">
-							<?php echo $dimension['name'];?>
-							<?php echo CHtml::hiddenField('category_id['.$i.']', $dimension['id']); ?>
+							<?php echo $column_name[$i];?>
+							<?php echo CHtml::activeHiddenField($eachmodel, "[$i]category_id"); ?>
 						</div>
 						<div class="hierarchy-field" id="parent-hierarchy">
-							<?php echo CHtml::dropDownList('parent_id['.$i.']', $dimension['parent'], $hierarchy_selection); ?>
+							<?php echo CHtml::activeDropDownList($eachmodel, "[$i]parent_id", $hierarchy_selection); ?>
 						</div>
-						<?php $i++; ?>
+						<div class="hierarchy-error-msg">
+							<?php echo CHtml::error($eachmodel, "[$i]parent_id"); ?>
+						</div>
 					<?php endforeach; ?>
 					
 					<div id="submit">

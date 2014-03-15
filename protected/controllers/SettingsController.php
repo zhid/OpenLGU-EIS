@@ -99,7 +99,7 @@ Class SettingsController extends CController
 					$area->managing_office = $model->managing_office;
 					$area->officer_in_charge = $model->officer_in_charge;
 					$area->area_logo = ($area_id_seq+1).'.'.$model->area_logo->getExtensionName();
-					echo $area_id_seq;
+					
 					if($area->save())
 					{
 						$uploaded = $model->area_logo->saveAs(Yii::getPathOfAlias('webroot.images').'/logo/'.$area->area_logo);
@@ -196,10 +196,9 @@ Class SettingsController extends CController
 			$model->area_logo = CUploadedFile::getInstance($model, 'area_logo');
 			
 			//try
+			$area_model = Area::model();
+			$transaction = $area_model->dbConnection->beginTransaction();
 			try {
-				$area_model = Area::model();
-				$transaction = $area_model->dbConnection->beginTransaction();
-			
 				$criteria = new CDbCriteria();
 				$criteria->select = '*';
 				$criteria->condition = 'area_id=:area_id';
@@ -1163,10 +1162,11 @@ Class SettingsController extends CController
 	}
 	
 	public function actionCreatecolumnhierarchy()
-	{
-		if(isset($_GET['areaid']) && isset($_GET['measureid']) 
-			&& !isset($_POST['category_id']) && !isset($_POST['parent_id']))
+	{	
+		if(isset($_GET['areaid']) && isset($_GET['measureid']))
 		{
+			$model = array();
+		
 			$criteria = new CDbCriteria();
 			$criteria->select = 'area_id, area_name';
 			$criteria->condition = 'area_id=:area_id';
@@ -1190,7 +1190,7 @@ Class SettingsController extends CController
 				$criteria = new CDbCriteria();
 				$criteria->select = '*';
 				$criteria->condition = 'measure_id=:measure_id';
-				$criteria->order = 'measure_id ASC';
+				$criteria->order = 'column_id ASC';
 				$criteria->params = array(':measure_id'=>$_GET['measureid']);
 				$columns = ColumnDimension::model()->findAll($criteria);
 			
@@ -1199,7 +1199,10 @@ Class SettingsController extends CController
 					$i = 0;
 					foreach($columns as $column)
 					{
-						$column_dimension[$i] = array('id'=>$column->column_id, 'name'=>$column->column_name, 'parent'=>0);
+						$model[$i] = new CreateColumnHierarchy();
+						$model[$i]->category_id = $column->column_id;
+						
+						$column_name[$i] = $column->column_name;
 						$column_id_array[$i] = $column->column_id;
 						$hierarchy_selection[$column->column_id] = $column->column_name;
 						$i++;
@@ -1207,106 +1210,123 @@ Class SettingsController extends CController
 					
 					$criteria = new CDbCriteria();
 					$criteria->select = 'parent_id';
+					$criteria->order = 'category_id ASC';
 					$criteria->addInCondition('category_id', $column_id_array);
 					$column_hierarchies = ColumnHierarchy::model()->findAll($criteria);
 					
 					$i = 0;
 					foreach($column_hierarchies as $column_hierarchy)
 					{
-						$column_dimension[$i]['parent'] = $column_hierarchy->parent_id;
+						$model[$i]->parent_id = $column_hierarchy->parent_id;
 						$i++;
 					}
 				}
-				$this->render('columnhierarchy', array('hierarchy_selection'=>$hierarchy_selection, 'column_dimension'=>$column_dimension, 'area'=>$area, 'measure'=>$measure));
+				
+				if(isset($_POST['CreateColumnHierarchy']))
+				{
+					$hierarchy_id = array();
+					for($i=0; $i<count($_POST['CreateColumnHierarchy']); $i++)
+					{
+						$hierarchy_id[$i] = array('id'=>$_POST['CreateColumnHierarchy'][$i]['category_id'],'parent'=>$_POST['CreateColumnHierarchy'][$i]['parent_id']);
+					}
+					
+					$column_hierarchy_model = ColumnHierarchy::model();
+					$transaction = $column_hierarchy_model->dbConnection->beginTransaction();
+					for($i=0; $i<count($_POST['CreateColumnHierarchy']); $i++)
+					{
+						$isBottom = false;
+						$isTop = false;
+						$distance = 0;
+						
+						$model[$i]->category_id = $_POST['CreateColumnHierarchy'][$i]['category_id'];
+						$model[$i]->parent_id = $_POST['CreateColumnHierarchy'][$i]['parent_id'];
+						
+						if(!$transaction->getActive())
+						{
+							$transaction = $column_hierarchy_model->dbConnection->beginTransaction();
+						}
+						
+						try {
+							if($model[$i]->checkhierarchy($hierarchy_id))
+							{
+								$criteria = new CDbCriteria();
+								$criteria->condition = 'category_id=:category_id';
+								$criteria->params = array(':category_id'=>$_POST['CreateColumnHierarchy'][$i]['category_id']);
+								$column_hierarchy = $column_hierarchy_model->find($criteria);
+								
+								if($_POST['CreateColumnHierarchy'][$i]['category_id'] == $_POST['CreateColumnHierarchy'][$i]['parent_id'])
+								{
+									$isTop = true;
+								}
+								else
+								{
+									$isBottom = true;
+									for($j=0; $j<count($_POST['CreateColumnHierarchy'][$i]['category_id']); $j++)
+									{
+										if(($_POST['CreateColumnHierarchy'][$i]['category_id'] == $_POST['CreateColumnHierarchy'][$j]['parent_id']) && ($i != $j))
+										{
+											$isBottom = false;
+											break;
+										}
+									}
+									
+									$category = $i;
+									$parent = $i;
+									while($_POST['CreateColumnHierarchy'][$category]['category_id'] != $_POST['CreateColumnHierarchy'][$parent]['parent_id'])
+									{
+										for($k=0; $k<count($_POST['CreateColumnHierarchy']); $k++)
+										{
+											if($_POST['CreateColumnHierarchy'][$k]['category_id'] == $_POST['CreateColumnHierarchy'][$parent]['parent_id'])
+											{
+												$category = $k;
+												$parent = $k;
+												$distance++;
+												break;
+											}
+										}
+									}
+								}
+								
+								$column_hierarchy->parent_id = $model[$i]->parent_id;
+								$column_hierarchy->top_flag = $isTop;
+								$column_hierarchy->bottom_flag = $isBottom;
+								$column_hierarchy->distance_level = $distance;
+								if($column_hierarchy->save())
+								{
+									$transaction->commit();
+									Yii::app()->user->setFlash('createhierarchy_success', "A hierarchy has been created!");
+								}
+								else
+								{
+									$transaction->rollback();
+									Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
+								}
+							}
+						}
+						catch(Exception $exception) {
+							$transaction->rollback();
+							Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
+						}
+					}
+				}
+				$this->render('columnhierarchy', array('model'=>$model, 'hierarchy_selection'=>$hierarchy_selection, 'column_name'=>$column_name, 'area'=>$area, 'measure'=>$measure));
 			}
 			else
 			{
 				throw new CHttpException(404);
 			}
 		}
-		else if(isset($_GET['areaid']) && isset($_GET['measureid']) 
-			&& isset($_POST['category_id']) && isset($_POST['parent_id']))
-		{
-			for($i=0; $i<count($_POST['category_id']); $i++)
-			{
-				$isBottom = false;
-				$isTop = false;
-				$distance = 0;
-				$transaction = Yii::app()->db->beginTransaction();
-				try
-				{
-					$criteria = new CDbCriteria();
-					$criteria->condition = 'category_id=:category_id';
-					$criteria->params = array(':category_id'=>$_POST['category_id'][$i]);
-					$column_hierarchy = ColumnHierarchy::model()->find($criteria);
-					
-					if($_POST['category_id'][$i] == $_POST['parent_id'][$i])
-					{
-						$isTop = true;
-					}
-					else
-					{
-						$isBottom = true;
-						for($j=0; $j<count($_POST['category_id']); $j++)
-						{
-							if(($_POST['category_id'][$i] == $_POST['parent_id'][$j]) && ($i != $j))
-							{
-								$isBottom = false;
-								break;
-							}
-						}
-						
-						$category = $i;
-						$parent = $i;
-						while($_POST['category_id'][$category] != $_POST['parent_id'][$parent])
-						{
-							for($k=0; $k<count($_POST['category_id']); $k++)
-							{
-								if($_POST['category_id'][$k] == $_POST['parent_id'][$parent])
-								{
-									$category = $k;
-									$parent = $k;
-									$distance++;
-									break;
-								}
-							}
-						}
-					}
-					
-					$column_hierarchy->parent_id = $_POST['parent_id'][$i];
-					$column_hierarchy->top_flag = $isTop;
-					$column_hierarchy->bottom_flag = $isBottom;
-					$column_hierarchy->distance_level = $distance;
-					if($column_hierarchy->save())
-					{
-						$transaction->commit();
-						Yii::app()->user->setFlash('createhierarchy_success', "A hierarchy has been created!");
-					}
-					else
-					{
-						$transaction->rollback();
-						Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
-					}
-				}
-				catch(Exception $exception) {
-					$transaction->rollback();
-					Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
-				}
-			}
-			$url = $this->createUrl('/settings/createcolumnhierarchy', array('areaid'=>$_GET['areaid'], 'measureid'=>$_GET['measureid']), '&');
-			$this->redirect($url);
-		}
 		else
 		{
 			throw new CHttpException(404);
 		}
 	}
-	
 	public function actionCreaterowhierarchy()
-	{
-		if(isset($_GET['areaid']) && isset($_GET['measureid']) 
-			&& !isset($_POST['category_id']) && !isset($_POST['parent_id']))
+	{	
+		if(isset($_GET['areaid']) && isset($_GET['measureid']))
 		{
+			$model = array();
+		
 			$criteria = new CDbCriteria();
 			$criteria->select = 'area_id, area_name';
 			$criteria->condition = 'area_id=:area_id';
@@ -1330,7 +1350,7 @@ Class SettingsController extends CController
 				$criteria = new CDbCriteria();
 				$criteria->select = '*';
 				$criteria->condition = 'measure_id=:measure_id';
-				$criteria->order = 'measure_id ASC';
+				$criteria->order = 'row_id ASC';
 				$criteria->params = array(':measure_id'=>$_GET['measureid']);
 				$rows = RowDimension::model()->findAll($criteria);
 			
@@ -1339,7 +1359,10 @@ Class SettingsController extends CController
 					$i = 0;
 					foreach($rows as $row)
 					{
-						$row_dimension[$i] = array('id'=>$row->row_id, 'name'=>$row->row_name, 'parent'=>0);
+						$model[$i] = new CreateRowHierarchy();
+						$model[$i]->category_id = $row->row_id;
+						
+						$row_name[$i] = $row->row_name;
 						$row_id_array[$i] = $row->row_id;
 						$hierarchy_selection[$row->row_id] = $row->row_name;
 						$i++;
@@ -1347,94 +1370,111 @@ Class SettingsController extends CController
 					
 					$criteria = new CDbCriteria();
 					$criteria->select = 'parent_id';
+					$criteria->order = 'category_id ASC';
 					$criteria->addInCondition('category_id', $row_id_array);
 					$row_hierarchies = RowHierarchy::model()->findAll($criteria);
 					
 					$i = 0;
 					foreach($row_hierarchies as $row_hierarchy)
 					{
-						$row_dimension[$i]['parent'] = $row_hierarchy->parent_id;
+						$model[$i]->parent_id = $row_hierarchy->parent_id;
 						$i++;
 					}
 				}
-				$this->render('rowhierarchy', array('hierarchy_selection'=>$hierarchy_selection, 'row_dimension'=>$row_dimension, 'area'=>$area, 'measure'=>$measure));
+				
+				if(isset($_POST['CreateRowHierarchy']))
+				{
+					$hierarchy_id = array();
+					for($i=0; $i<count($_POST['CreateRowHierarchy']); $i++)
+					{
+						$hierarchy_id[$i] = array('id'=>$_POST['CreateRowHierarchy'][$i]['category_id'],'parent'=>$_POST['CreateRowHierarchy'][$i]['parent_id']);
+					}
+					
+					$row_hierarchy_model = RowHierarchy::model();
+					$transaction = $row_hierarchy_model->dbConnection->beginTransaction();
+					for($i=0; $i<count($_POST['CreateRowHierarchy']); $i++)
+					{
+						$isBottom = false;
+						$isTop = false;
+						$distance = 0;
+						
+						$model[$i]->category_id = $_POST['CreateRowHierarchy'][$i]['category_id'];
+						$model[$i]->parent_id = $_POST['CreateRowHierarchy'][$i]['parent_id'];
+						
+						if(!$transaction->getActive())
+						{
+							$transaction = $row_hierarchy_model->dbConnection->beginTransaction();
+						}
+						
+						try {
+							if($model[$i]->checkhierarchy($hierarchy_id))
+							{	
+								$criteria = new CDbCriteria();
+								$criteria->condition = 'category_id=:category_id';
+								$criteria->params = array(':category_id'=>$_POST['CreateRowHierarchy'][$i]['category_id']);
+								$row_hierarchy = $row_hierarchy_model->find($criteria);
+						
+								if($_POST['CreateRowHierarchy'][$i]['category_id'] == $_POST['CreateRowHierarchy'][$i]['parent_id'])
+								{
+									$isTop = true;
+								}
+								else
+								{
+									$isBottom = true;
+									for($j=0; $j<count($_POST['CreateRowHierarchy'][$i]['category_id']); $j++)
+									{
+										if(($_POST['CreateRowHierarchy'][$i]['category_id'] == $_POST['CreateRowHierarchy'][$j]['parent_id']) && ($i != $j))
+										{
+											$isBottom = false;
+											break;
+										}
+									}
+									
+									$category = $i;
+									$parent = $i;
+									while($_POST['CreateRowHierarchy'][$category]['category_id'] != $_POST['CreateRowHierarchy'][$parent]['parent_id'])
+									{
+										for($k=0; $k<count($_POST['CreateRowHierarchy']); $k++)
+										{
+											if($_POST['CreateRowHierarchy'][$k]['category_id'] == $_POST['CreateRowHierarchy'][$parent]['parent_id'])
+											{
+												$category = $k;
+												$parent = $k;
+												$distance++;
+												break;
+											}
+										}
+									}
+								}
+								
+								$row_hierarchy->parent_id = $model[$i]->parent_id;
+								$row_hierarchy->top_flag = $isTop;
+								$row_hierarchy->bottom_flag = $isBottom;
+								$row_hierarchy->distance_level = $distance;
+								if($row_hierarchy->save())
+								{
+									$transaction->commit();
+									Yii::app()->user->setFlash('createhierarchy_success', "A hierarchy has been created!");
+								}
+								else
+								{
+									$transaction->rollback();
+									Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
+								}
+							}
+						}
+						catch(Exception $exception) {
+							$transaction->rollback();
+							Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
+						}
+					}
+				}
+				$this->render('rowhierarchy', array('model'=>$model, 'hierarchy_selection'=>$hierarchy_selection, 'row_name'=>$row_name, 'area'=>$area, 'measure'=>$measure));
 			}
 			else
 			{
 				throw new CHttpException(404);
 			}
-		}
-		else if(isset($_GET['areaid']) && isset($_GET['measureid']) 
-			&& isset($_POST['category_id']) && isset($_POST['parent_id']))
-		{
-			for($i=0; $i<count($_POST['category_id']); $i++)
-			{
-				$isBottom = false;
-				$isTop = false;
-				$distance = 0;
-				$transaction = Yii::app()->db->beginTransaction();
-				try
-				{
-					$criteria = new CDbCriteria();
-					$criteria->condition = 'category_id=:category_id';
-					$criteria->params = array(':category_id'=>$_POST['category_id'][$i]);
-					$row_hierarchy = RowHierarchy::model()->find($criteria);
-					
-					if($_POST['category_id'][$i] == $_POST['parent_id'][$i])
-					{
-						$isTop = true;
-					}
-					else
-					{
-						$isBottom = true;
-						for($j=0; $j<count($_POST['category_id']); $j++)
-						{
-							if(($_POST['category_id'][$i] == $_POST['parent_id'][$j]) && ($i != $j))
-							{
-								$isBottom = false;
-								break;
-							}
-						}
-						
-						$category = $i;
-						$parent = $i;
-						while($_POST['category_id'][$category] != $_POST['parent_id'][$parent])
-						{
-							for($k=0; $k<count($_POST['category_id']); $k++)
-							{
-								if($_POST['category_id'][$k] == $_POST['parent_id'][$parent])
-								{
-									$category = $k;
-									$parent = $k;
-									$distance++;
-									break;
-								}
-							}
-						}
-					}
-					
-					$row_hierarchy->parent_id = $_POST['parent_id'][$i];
-					$row_hierarchy->top_flag = $isTop;
-					$row_hierarchy->bottom_flag = $isBottom;
-					$row_hierarchy->distance_level = $distance;
-					if($row_hierarchy->save())
-					{
-						$transaction->commit();
-						Yii::app()->user->setFlash('createhierarchy_success', "A hierarchy has been created!");
-					}
-					else
-					{
-						$transaction->rollback();
-						Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
-					}
-				}
-				catch(Exception $exception) {
-					$transaction->rollback();
-					Yii::app()->user->setFlash('createhierarchy_failed', "Creating hierarchy failed!");
-				}
-			}
-			$url = $this->createUrl('/settings/createrowhierarchy', array('areaid'=>$_GET['areaid'], 'measureid'=>$_GET['measureid']), '&');
-			$this->redirect($url);
 		}
 		else
 		{

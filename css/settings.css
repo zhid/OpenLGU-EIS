@@ -723,7 +723,17 @@
 	margin-top: 10px;
 	float: left;
 	height: 40px;
-	width: 600px;
+	width: 220px;
+}
+.hierarchy-error-msg {
+	margin-top: 10px;
+	float: left;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+	height: 40px;
+	width: 400px;
 }
 #parent-hierarchy select{
 	font-family: Arial;
