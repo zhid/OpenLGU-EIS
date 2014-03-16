@@ -8,24 +8,22 @@
 <div id="app-name">
 	Executive Information System
 </div>
-<?php
-	/*foreach($areas as $area)
-	{
-		echo $area->area_name;
-	}*/
-?>
 <div class="panel" style="height:<?php echo ($size/5)*300; ?>px">
 	<?php
 		foreach($areas as $area)
 		{
 			echo '
 				<div class="wrapper">
+					<a href="'.Yii::app()->getHomeUrl().'/main/dashboard?areaid='.($area->area_id).'">
 					<div class="area-border">
 						<div class="area-container">
-							<img class="logo" src="'.(Yii::app()->request->baseUrl).'/images/logo/'.($area->area_logo).'" alt=""/>
+							<div class="color-rating-container">
+								<img style="-webkit-transform: rotate(0deg); -moz-transform: rotate(0deg);" class="pin" src="'.(Yii::app()->request->baseUrl).'/images/meter-pin.png" />
+							</div>
+							<img class="area-logo" src="'.(Yii::app()->request->baseUrl).'/images/logo/'.($area->area_logo).'" alt="'.($area->area_logo).'" />
 						</div>
 					</div>
-					
+					</a>
 					<div class="area-name">
 						'.($area->area_name).'
 					</div>

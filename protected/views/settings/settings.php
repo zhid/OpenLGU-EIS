@@ -14,12 +14,12 @@
 </style>
 
 <script type="text/javascript">
-	function deleteYesClick()
+	function deleteYesClick(areaForm)
 	{
 		var deletePrompt = document.getElementById('area-delete-prompt');
-		var deleteForm = document.getElementById('deleteAreaForm');
+		
 		deletePrompt.style.display = "none";
-		deleteForm.submit();
+		areaForm.submit();
 	}
 
 	function deleteNoClick()
@@ -28,15 +28,15 @@
 		deletePrompt.style.display = "none";
 	}
 	
-	function showDeletePrompt(areaName)
+	function showDeletePrompt(areaName, areaForm)
 	{
 		var deletePrompt = document.getElementById('area-delete-prompt');
 		var deleteYes = document.getElementById("deleteYes");
 		var deleteNo = document.getElementById("deleteNo");
 		var nameContainer = document.getElementById("measure-del");
 		
-		nameContainer.innerHTML = areaName;
-		deleteYes.addEventListener("click", deleteYesClick, false);
+		nameContainer.innerHTML = areaForm.getAttribute('areaname');
+		deleteYes.addEventListener("click", function(){deleteYesClick(areaForm)}, false);
 		deleteNo.addEventListener("click", deleteNoClick, false);
 		deletePrompt.style.display = "block";
 	
@@ -140,7 +140,7 @@
 									
 								echo '</td>';
 								echo '<td>';
-										echo CHtml::beginForm(array('settings/deletearea/'), 'post', array('id'=>'deleteAreaForm', 'onsubmit'=>'return showDeletePrompt("'.($area->area_name).'")'));
+										echo CHtml::beginForm(array('settings/deletearea/'), 'post', array('areaname'=>$area->area_name, 'id'=>'deleteAreaForm', 'onsubmit'=>'return showDeletePrompt("'.($area->area_name).'", this)'));
 											echo CHtml::hiddenField('areaid', $area->area_id);
 									
 											echo CHtml::submitButton('delete', array('name'=>''));

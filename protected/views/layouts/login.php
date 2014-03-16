@@ -7,7 +7,7 @@
 		
 		<link rel="stylesheet" type="text/css" href="<?php echo Yii::app()->request->baseUrl; ?>/css/login.css" />
 
-		<title><?php echo CHtml::encode($this->pageTitle); ?></title>
+		<title>Log In</title>
 	</head>
 
 	<body>

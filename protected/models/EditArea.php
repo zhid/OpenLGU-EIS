@@ -40,7 +40,7 @@ Class EditArea extends CFormModel
 		{
 			$ext = $this->area_logo->getExtensionName();
 		
-			if($ext != 'jpeg' && $ext != 'png' && $ext != 'gif')
+			if($ext != 'jpg' && $ext != 'png' && $ext != 'gif')
 			{
 				$this->addError('area_logo', 'Only files with these extensions are allowed: png, jpg, gif.');
 			}

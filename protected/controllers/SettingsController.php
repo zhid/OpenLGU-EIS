@@ -729,8 +729,11 @@ Class SettingsController extends CController
 							$new_table_name = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
 							if($measure->save())
 							{
-								$update_measure_table_command = Yii::app()->db->createCommand();
-								$update_measure_table_command->renameTable($table, $new_table_name);
+								if($table != $new_table_name)
+								{
+									$update_measure_table_command = Yii::app()->db->createCommand();
+									$update_measure_table_command->renameTable($table, $new_table_name);
+								}
 								
 								$measure_transaction->commit();
 								Yii::app()->user->setFlash('editmeasure_success', "Editing measure has been updated!");

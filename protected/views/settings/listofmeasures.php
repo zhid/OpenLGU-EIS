@@ -22,11 +22,11 @@
 </style>
 
 <script type="text/javascript">
-	function deleteYesClick()
+	function deleteYesClick(measureForm)
 	{
 		var deleteForm = document.getElementById('deleteMeasureForm');
-		var deletePrompt = document.getElementById('measure-delete-prompt');
-		deleteForm.submit();
+		
+		measureForm.submit();
 		deletePrompt.style.display = "none";
 	}
 
@@ -36,15 +36,15 @@
 		deletePrompt.style.display = "none";
 	}
 	
-	function showDeletePrompt(measureName)
+	function showDeletePrompt(measureName, measureForm)
 	{
 		var deletePrompt = document.getElementById('measure-delete-prompt');
 		var deleteYes = document.getElementById("deleteYes");
 		var deleteNo = document.getElementById("deleteNo");
 		var nameContainer = document.getElementById("measure-del");
 		
-		nameContainer.innerHTML = measureName;
-		deleteYes.addEventListener("click", deleteYesClick, false);
+		nameContainer.innerHTML = measureForm.getAttribute('measurename');
+		deleteYes.addEventListener("click", function(){deleteYesClick(measureForm)}, false);
 		deleteNo.addEventListener("click", deleteNoClick, false);
 		deletePrompt.style.display = "block";
 	
@@ -163,7 +163,7 @@
 										
 									echo '</td>';
 									echo '<td>';
-											echo CHtml::beginForm(array('settings/deletemeasure/'), 'post', array('id'=>'deleteMeasureForm', 'onsubmit'=>'return showDeletePrompt("'.($measure->measure_name).'")'));
+											echo CHtml::beginForm(array('settings/deletemeasure/'), 'post', array('measurename'=>$measure->measure_name, 'id'=>'deleteMeasureForm', 'onsubmit'=>'return showDeletePrompt("'.($measure->measure_name).'", this)'));
 												echo CHtml::hiddenField('areaid', $area_id);
 												echo CHtml::hiddenField('measureid', $measure->measure_id);
 												echo CHtml::submitButton('delete', array('name'=>''));
