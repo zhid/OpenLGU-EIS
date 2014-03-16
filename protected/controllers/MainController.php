@@ -83,11 +83,31 @@ Class MainController extends CController
 	{
 		if(isset($_POST['measureid']) && isset($_POST['isAjax']))
 		{
+			$rowParentId = $_POST['rowParentId'];
+			$rowDistanceLevel = $_POST['rowDistanceLevel'];
+			$columnParentId = $_POST['columnParentId'];
+			$columnDistanceLevel = $_POST['columnDistanceLevel'];
+		
+			//find measure name
+			$criteria = new CDbCriteria();
+			$criteria->select = 'measure_name';
+			$criteria->condition = 'measure_id=:measure_id';
+			$criteria->params = array(':measure_id'=>$_POST['measureid']);
+			$measure = Measure::model()->find($criteria);
+		
 			//find row dimension with distance level of 0
 			$criteria = new CDbCriteria();
 			$criteria->select = 'category_id';
-			$criteria->condition = 'distance_level=:distance_level';
-			$criteria->params = array(':distance_level'=>0);
+			if($rowDistanceLevel == 0)
+			{
+				$criteria->condition = 'distance_level=:distance_level';
+				$criteria->params = array(':distance_level'=>$rowDistanceLevel);
+			}
+			else
+			{
+				$criteria->condition = 'distance_level=:distance_level AND parent_id=:parent_id';
+				$criteria->params = array(':distance_level'=>$rowDistanceLevel, ':parent_id'=>$rowParentId);
+			}
 			$row_hierarchies = RowHierarchy::model()->findAll($criteria);
 			
 			$row_root = array();
@@ -106,26 +126,66 @@ Class MainController extends CController
 			$rows = RowDimension::model()->findAll($criteria);
 			
 			$radiobutton_row = array();
+			$row_dim = array();
 			$selected;
 			$i = 0;
 			foreach($rows as $row)
 			{
 				$radiobutton_row[$row->row_name] = $row->row_name;
-				if($i == 0){$selected = $row->row_name; $i++;}
+				if($i == 0){$selected = $row->row_name;}
+				
+				$row_dim[$i] = $row->row_name;
+				$i++;
 			}
 			
 			echo '<div class="dashboard-side-name">Rows</div>';
 			echo '<div class="dimensions-checkbox">';
 			echo CHtml::beginForm('main', 'POST', array('name'=>'row_dimension_form'));
-			echo CHtml::radioButtonList('rows', $selected, $radiobutton_row, array('onchange'=>'rowList(this)'));
+			echo CHtml::checkBoxList('rows', $selected, $radiobutton_row, array('onchange'=>'rowList(this)'));
 			echo CHtml::endForm();
 			echo '</div>';
+			
+			//row filter
+			for($i=0; $i<count($row_dim); $i++)
+			{
+				$table = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
+				$attribute = preg_replace('/\s+/', '_', strtolower($row_dim[$i]));
+				$rows = Yii::app()->db->createCommand()
+					->selectDistinct($attribute)
+					->from($table)
+					->queryAll();
+				
+				$row_value_list = array();
+				$selected = array(); $j = 0;
+				foreach($rows as $row)
+				{
+					$row_value_list[$row[$attribute]] = $row[$attribute];
+					$selected[$j++] = $row[$attribute];
+				}	
+					
+				echo '<div class="filter_container" id="'.$attribute.'_container" style="display:none;">';
+				echo '<div class="filter_name">Filters</div>';
+				echo CHtml::beginForm('main', 'POST', array('id'=>$attribute.'_form'));
+				echo CHtml::checkBoxList($attribute.'_values', $selected, $row_value_list);
+				echo CHtml::endForm();
+				echo '<div class="filter_button"><button onclick="rowFilterButton('.$attribute.'_container)">Ok</button></div>';
+				echo '</div>';
+			}
+			//end of row filter
 			
 			//find column dimension with distance level of 0
 			$criteria = new CDbCriteria();
 			$criteria->select = 'category_id';
-			$criteria->condition = 'distance_level=:distance_level';
-			$criteria->params = array(':distance_level'=>0);
+			if($columnDistanceLevel == 0)
+			{
+				$criteria->condition = 'distance_level=:distance_level';
+				$criteria->params = array(':distance_level'=>$columnDistanceLevel);
+			}
+			else
+			{
+				$criteria->condition = 'distance_level=:distance_level AND parent_id=:parent_id';
+				$criteria->params = array(':distance_level'=>$columnDistanceLevel, ':parent_id'=>$columnParentId);
+			}
 			$column_hierarchies = ColumnHierarchy::model()->findAll($criteria);
 			
 			$column_root = array();
@@ -146,6 +206,7 @@ Class MainController extends CController
 			$radiobutton_column = array();
 			$selected;
 			$i = 0;
+			
 			foreach($columns as $column)
 			{
 				$radiobutton_column[$column->column_name] = $column->column_name;
@@ -155,7 +216,7 @@ Class MainController extends CController
 			echo '<div class="dashboard-side-name">Columns</div>';
 			echo '<div class="dimensions-checkbox">';
 			echo CHtml::beginForm('main', 'POST', array('name'=>'column_dimension_form'));
-			echo CHtml::radioButtonList('columns', $selected, $radiobutton_column, array('onchange'=>'columnList(this)'));
+			echo CHtml::checkBoxList('columns', $selected, $radiobutton_column, array('onchange'=>'columnList(this)'));
 			echo CHtml::endForm();
 			echo '</div>';
 		}

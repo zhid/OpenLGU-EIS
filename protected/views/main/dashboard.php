@@ -37,15 +37,20 @@
 	<div id="dashboard-view">
 		<div id="dashboard-panel">
 			<div id="reload" class="panel-button"></div>
-			<div id="play" class="panel-button"></div>
+			<div id="play" class="panel-button" onclick="queryData()"></div>
 			<div id="rollup" class="panel-button"></div>
 			<div id="save" class="panel-button"></div>
 			<div id="alert" class="panel-button"></div>
 		</div>
 		
-		<div id="dashboard-filter">
-			<div id="dashboard-filter-title">filters:</div>
-			<div id="dashboard-filter-buttons"></div>
+		<div class="dashboard-filter">
+			<div id="row-filter-title">Rows:</div>
+			<div id="row-filter-buttons"></div>
+		</div>
+		
+		<div class="dashboard-filter">
+			<div id="column-filter-title">Columns:</div>
+			<div id="column-filter-buttons"></div>
 		</div>
 		
 		<div id="chart-container"></div>

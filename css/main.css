@@ -281,29 +281,30 @@ img.pin {
 #rollup{background-image: url('../images/rollup.png');}
 #save{background-image: url('../images/save.png');}
 #alert{background-image: url('../images/alert.png');}
-#dashboard-filter{
+.dashboard-filter{
 	border-radius: 5px;
 	border: 2px solid #eaeaea; 
 	margin: 4px;
 	height: 30px;
 	width: 1000px;
 }
-#dashboard-filter-title{
+#row-filter-title, #column-filter-title{
 	float: left;
 	background-color: #f7f7f7;
 	padding-top: 5px;
-	text-align: center;
+	padding-left: 5px;
+	text-align: left;
 	height: 25px;
 	width: 70px;
 	font-family: Arial;
 	font-size: 15px;
 }
-#dashboard-filter-buttons {
+#row-filter-buttons, #column-filter-buttons{
 	float: left;
 	height: inherit;
-	width: 930px;
+	width: 925px;
 }
-#dashboard-filter-buttons button {
+#row-filter-buttons button, #column-filter-buttons button {
 	cursor: pointer;
 	background-color: #ebebed;
 	background-image: url('../images/filter_btn.png');
@@ -358,4 +359,36 @@ img.pin {
 #scatter {background-image: url('../images/chart-scatter.png');}
 #area{background-image: url('../images/chart-area.png');}
 #map{background-image: url('../images/chart-map.png');}
+.filter_container {
+	position: absolute;
+	left: 220px;
+	top: 310px;
+	border: 2px solid #c4c4c8;
+	padding-left: 5px;
+	min-height: 150px;
+	height: auto;
+	width: 295px;
+}
+.filter_button {
+	margin-top: 10px;
+	height: 35px;
+	width: 295px;
+}
+.filter_button button{
+	font-family: Arial;
+	font-size: 15px;
+	height: 25px;
+	width: 50px;
+}
+.filter_name {
+	height: 25px;
+	width: 285px;
+	font-family: Arial Black;
+	color: #5f5b58;
+	padding-top: 5px;
+	padding-left: 10px;
+	margin-bottom: 10px;
+	border-bottom: 2px solid #eaeaea;
+	background-color: #f7f7f7;
+}
 /*style for the dashboard*/

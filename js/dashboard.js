@@ -37,9 +37,34 @@ function init()
 		}
 	}
 	
+	loadHierarchyData();
 	loadMeasureData();
 	showDimensions();
 	loadViewModeData();
+}
+
+function loadHierarchyData()
+{
+	if(window.sessionStorage)
+	{	
+		if(!sessionStorage.rowParentId)
+		{
+			sessionStorage.setItem('rowParentId', 0);
+		}
+		if(!sessionStorage.rowDistanceLevel)
+		{
+			sessionStorage.setItem('rowDistanceLevel', 0);
+		}
+		
+		if(!sessionStorage.columnParentId)
+		{
+			sessionStorage.setItem('columnParentId', 0);
+		}
+		if(!sessionStorage.columnDistanceLevel)
+		{
+			sessionStorage.setItem('columnDistanceLevel', 0);
+		}
+	}
 }
 
 function loadMeasureData()
@@ -59,7 +84,6 @@ function loadMeasureData()
 function loadViewModeData()
 {
 	var viewMode;
-	//var chart_btn = document.getElementsByClassName('charts');
 
 	if(window.sessionStorage)
 	{
@@ -88,19 +112,19 @@ function loadViewModeData()
 function loadDimensionsData()
 {
 	var rowName, columnName;
-	var rows =  document.forms.row_dimension_form.elements.rows;
-	var columns =  document.forms.column_dimension_form.elements.columns;
+	var rows =  document.forms.row_dimension_form.elements;
+	var columns =  document.forms.column_dimension_form.elements;
 	
 	if(window.sessionStorage)
 	{
 		if(sessionStorage.rowName)
 		{
-			rowName = sessionStorage.getItem('rowName');
-			if(rows.length !== undefined)
+			rowName = sessionStorage.getItem('rowName').split(',');
+			for(var i=0; i<rows.length; i++)
 			{
-				for(var i=0; i<rows.length; i++)
+				for(var j=0; j<rowName.length; j++)
 				{
-					if(rows[i].value == rowName)
+					if(rows[i].value == rowName[j])
 					{
 						rows[i].checked = true;
 						break;
@@ -111,12 +135,12 @@ function loadDimensionsData()
 		
 		if(sessionStorage.columnName)
 		{
-			columnName = sessionStorage.getItem('columnName');
-			if(columns.length !== undefined)
+			columnName = sessionStorage.getItem('columnName').split(',');
+			for(var i=0; i<columns.length; i++)
 			{
-				for(var i=0; i<columns.length; i++)
+				for(var j=0; j<columnName.length; j++)
 				{
-					if(columns[i].value == columnName)
+					if(columns[i].value == columnName[j])
 					{
 						columns[i].checked = true;
 						break;
@@ -157,23 +181,19 @@ function setMeasureSelected(measureId)
 
 function showFilterButtons()
 {
-	var rows =  document.forms.row_dimension_form.elements.rows;
-	var columns =  document.forms.column_dimension_form.elements.columns;
-	var row_name, column_name;
+	var rows =  document.forms.row_dimension_form.elements;
+	var columns =  document.forms.column_dimension_form.elements;
+	var row_name = new Array(), column_name = new Array();
+	var column_filter = '', row_filter = '';
+	var j;
 	
-	if(rows.length === undefined)
+	j = 0;
+	for(var i=0; i<rows.length; i++)
 	{
-		row_name = document.forms.namedItem('row_dimension_form').rows.value;
-	}
-	else
-	{
-		for(var i=0; i<rows.length; i++)
+		if(rows[i].checked)
 		{
-			if(rows[i].checked)
-			{
-				row_name = rows[i].value;
-				break;
-			}
+			row_filter = row_filter+'<button onclick="rowFilter(this)">'+(rows[i].value)+'</button>';
+			row_name[j++] = rows[i].value;
 		}
 	}
 	if(window.sessionStorage)
@@ -181,19 +201,13 @@ function showFilterButtons()
 		sessionStorage.setItem('rowName', row_name);
 	}
 	
-	if(columns.length === undefined)
+	j = 0;
+	for(var i=0; i<columns.length; i++)
 	{
-		column_name = document.forms.namedItem('column_dimension_form').columns.value;
-	}
-	else
-	{
-		for(var i=0; i<columns.length; i++)
+		if(columns[i].checked)
 		{
-			if(columns[i].checked)
-			{
-				column_name = columns[i].value;
-				break;
-			}
+			column_filter = column_filter+'<button onclick="columnFilter(this)">'+(columns[i].value)+'</button>';
+			column_name[j++] = columns[i].value
 		}
 	}
 	if(window.sessionStorage)
@@ -201,13 +215,27 @@ function showFilterButtons()
 		sessionStorage.setItem('columnName', column_name);
 	}
 	
-
-	var row_value = row_name.toLowerCase();
-	var column_value = column_name.toLowerCase();
+	var row_filter_container = document.getElementById('row-filter-buttons');
+	var column_filter_container = document.getElementById('column-filter-buttons');
 	
-	var filter = '<button onclick="rowfilter(this,'+row_value.replace(/\s+/, '_')+')">'+row_name+'</button><button onclick="columnfilter(this, '+column_value.replace(/\s+/, '_')+')">'+column_name+'</button>';
-	var filter_container = document.getElementById('dashboard-filter-buttons');
-	filter_container.innerHTML = filter;
+	row_filter_container.innerHTML = row_filter;
+	column_filter_container.innerHTML = column_filter;
+}
+
+function rowFilter(rowname)
+{
+	var row_name = rowname.innerHTML.toLowerCase();
+	while(row_name.search(/\s+/) != -1)
+	{
+		row_name = row_name.replace(/\s+/, "_");
+	}
+	var row_value = document.getElementById(row_name+'_container');
+	row_value.style.display = "block";
+}
+
+function rowFilterButton(rowFilter)
+{
+	rowFilter.style.display = "none";
 }
 
 function showDimensions()
@@ -216,7 +244,11 @@ function showDimensions()
 	var action = form.getAttribute('action');
 	var formData = new FormData(form);
 	
-	formData.append('isAjax', 1)
+	formData.append('isAjax', 1);
+	formData.append('rowParentId', sessionStorage.rowParentId);
+	formData.append('rowDistanceLevel', sessionStorage.rowDistanceLevel);
+	formData.append('columnParentId', sessionStorage.columnParentId);
+	formData.append('columnDistanceLevel', sessionStorage.columnDistanceLevel);
 	
 	if(window.sessionStorage)
 	{
@@ -307,6 +339,11 @@ function getViewMode()
 			return i;
 		}
 	}
+}
+
+function queryData()
+{
+
 }
 
 window.onload = function ()
