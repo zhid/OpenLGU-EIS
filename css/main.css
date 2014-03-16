@@ -229,7 +229,7 @@ img.pin {
 }
 #dimensions label{
 	font-family: Arial;
-	font-size: 15px;
+	font-size: 13px;
 }
 .dimensions-checkbox {
 	padding-top: 5px;
@@ -248,7 +248,7 @@ img.pin {
 #measures-container select {
 	border: 1px solid black;
 	font-family: Arial;
-	font-size: 15px;
+	font-size: 13px;
 	height: 25px;
 	width: 170px;
 }
@@ -281,14 +281,14 @@ img.pin {
 #rollup{background-image: url('../images/rollup.png');}
 #save{background-image: url('../images/save.png');}
 #alert{background-image: url('../images/alert.png');}
-#dashboard-row, #dashboard-column {
+#dashboard-filter{
 	border-radius: 5px;
 	border: 2px solid #eaeaea; 
 	margin: 4px;
 	height: 30px;
 	width: 1000px;
 }
-#dashboard-row-title, #dashboard-column-title {
+#dashboard-filter-title{
 	float: left;
 	background-color: #f7f7f7;
 	padding-top: 5px;
@@ -298,10 +298,29 @@ img.pin {
 	font-family: Arial;
 	font-size: 15px;
 }
-#dashboard-row-buttons, #dashboard-column-buttons {
+#dashboard-filter-buttons {
 	float: left;
 	height: inherit;
 	width: 930px;
+}
+#dashboard-filter-buttons button {
+	cursor: pointer;
+	background-color: #ebebed;
+	background-image: url('../images/filter_btn.png');
+	background-repeat: no-repeat;
+	background-size: 12px 12px;
+	background-position: right center;
+	border-radius: 5px;
+	border: 2px solid #c4c4c8;
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-top: 2px;
+	margin-left: 5px;
+	height: 25px;
+	min-width: 100px;
+	width: auto;
+	font-family: Arial;
+	font-size: 13px;
 }
 #dashboard-charts {
 	border-left: 2px solid #eaeaea;

@@ -62,13 +62,6 @@
 				</div>
 				
 				<div class="data-label">
-					Measure Data Type:
-				</div>
-				<div class="data-value">
-					<?php echo $measure->measure_data_type; ?>
-				</div>
-				
-				<div class="data-label">
 					Threshold:
 				</div>
 				<div class="data-value">

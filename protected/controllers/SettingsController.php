@@ -278,7 +278,6 @@ Class SettingsController extends CController
 					if(isset($_POST['AddMeasureFirstForm']['measure_name']) && isset($_POST['AddMeasureFirstForm']['number_of_rows']) 
 					&& isset($_POST['AddMeasureFirstForm']['number_of_columns']) && isset($_POST['AddMeasureFirstForm']['description']))
 					{
-						$model->measure_data_type = $_POST['AddMeasureFirstForm']['measure_data_type'];
 						$model->measure_name = $_POST['AddMeasureFirstForm']['measure_name'];
 						$model->number_of_rows = $_POST['AddMeasureFirstForm']['number_of_rows'];
 						$model->number_of_columns = $_POST['AddMeasureFirstForm']['number_of_columns'];
@@ -287,7 +286,6 @@ Class SettingsController extends CController
 						if($model->validate())
 						{
 							Yii::app()->session['measure_name'] = $model->measure_name;
-							Yii::app()->session['measure_data_type'] = $model->measure_data_type;
 							Yii::app()->session['number_of_rows'] = $model->number_of_rows;
 							Yii::app()->session['number_of_columns'] = $model->number_of_columns;
 							Yii::app()->session['description'] = $model->description;
@@ -471,7 +469,7 @@ Class SettingsController extends CController
 		$table = array();
 								
 		$table_name = preg_replace('/\s+/', '_', strtolower(Yii::app()->session['measure_name']));
-		$table['measure_data'] = Yii::app()->session['measure_data_type'];
+	
 		for($i=0; $i<Yii::app()->session['number_of_rows']; $i++)
 		{
 			$row_name = preg_replace('/\s+/', '_', strtolower(Yii::app()->session['row'.$i.'_name']));
@@ -491,11 +489,10 @@ Class SettingsController extends CController
 			//add measure parameter to the measure table
 			//rewrite, delete underscores
 			$measure_name = Yii::app()->session['measure_name'];
-			$measure_data_type = Yii::app()->session['measure_data_type'];
 			$description = Yii::app()->session['description'];
 			$measure_area_id = $area_id;
 			$add_measure_command = Yii::app()->db->createCommand();
-			$add_measure_command->insert('measure', array('measure_name'=>$measure_name, 'measure_data_type'=>$measure_data_type, 'area_id'=>$measure_area_id, 'description'=>$description));
+			$add_measure_command->insert('measure', array('measure_name'=>$measure_name, 'area_id'=>$measure_area_id, 'description'=>$description));
 			
 			$criteria = new CDbCriteria();
 			$criteria->select = 'last_value';
@@ -703,7 +700,6 @@ Class SettingsController extends CController
 				{
 					$model->measure_id = $_POST['EditMeasure']['measure_id'];
 					$model->measure_name = $_POST['EditMeasure']['measure_name'];
-					$model->measure_data_type = $_POST['EditMeasure']['measure_data_type'];
 					$model->threshold = $_POST['EditMeasure']['threshold'];
 					$model->alert_time = $_POST['EditMeasure']['alert_time'];
 					$model->description = $_POST['EditMeasure']['description'];
@@ -721,7 +717,6 @@ Class SettingsController extends CController
 						if($model->validate())
 						{
 							$measure->measure_name = $model->measure_name;
-							$measure->measure_data_type = $model->measure_data_type;
 							$measure->threshold = $model->threshold;
 							$measure->alert_time = $model->alert_time;
 							$measure->description = $model->description;

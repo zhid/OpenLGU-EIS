@@ -43,14 +43,9 @@
 			<div id="alert" class="panel-button"></div>
 		</div>
 		
-		<div id="dashboard-row">
-			<div id="dashboard-row-title">columns:</div>
-			<div id="dashboard-row-buttons"></div>
-		</div>
-		
-		<div id="dashboard-column">
-			<div id="dashboard-row-title">rows:</div>
-			<div id="dashboard-column-buttons"></div>
+		<div id="dashboard-filter">
+			<div id="dashboard-filter-title">filters:</div>
+			<div id="dashboard-filter-buttons"></div>
 		</div>
 		
 		<div id="chart-container"></div>
@@ -59,12 +54,12 @@
 	<div id="dashboard-charts">
 		<div id="mode">View Mode</div>
 		<input id="view_mode" type="hidden" value="" />
-		<div id="table" type="table" class="charts"></div>
-		<div id="bar" type="bar" class="charts"></div>
-		<div id="line" type="line" class="charts"></div>
-		<div id="pie" type="pie" class="charts"></div>
-		<div id="scatter" type="scatter" class="charts"></div>
-		<div id="area" type="area" class="charts"></div>
-		<div id="map" type="map" class="charts"></div>
+		<div id="table" type="table" class="charts" ischartselected="true"></div>
+		<div id="bar" type="bar" class="charts" ischartselected="false"></div>
+		<div id="line" type="line" class="charts" ischartselected="false"></div>
+		<div id="pie" type="pie" class="charts" ischartselected="false"></div>
+		<div id="scatter" type="scatter" class="charts" ischartselected="false"></div>
+		<div id="area" type="area" class="charts" ischartselected="false"></div>
+		<div id="map" type="map" class="charts" ischartselected="false"></div>
 	</div>
 </div>

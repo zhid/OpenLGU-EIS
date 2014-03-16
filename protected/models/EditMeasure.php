@@ -4,7 +4,6 @@ Class EditMeasure extends CFormModel
 {
 	public $measure_id;
 	public $measure_name;
-	public $measure_data_type;
 	public $threshold;
 	public $alert_time;
 	public $description;
@@ -12,7 +11,7 @@ Class EditMeasure extends CFormModel
 	public function rules()
 	{
 		return array (
-			array('measure_name, measure_data_type, threshold, alert_time, description', 'required'),
+			array('measure_name, threshold, alert_time, description', 'required'),
 			array('threshold', 'numerical'),
 			array('measure_name', 'checkmeasurename'),
 		);

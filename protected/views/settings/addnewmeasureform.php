@@ -1,18 +1,7 @@
 <?php switch($page):?>
 <?php case 1:?>
 <div class="add-measure">
-	<?php echo CHtml::beginForm(array('settings/addnewmeasure?areaid='.($area_id).'&page='.($page)), 'post'); ?>
-		<div class="label">
-			<?php echo CHtml::activeLabel($model, 'measure_data_type'); ?>
-		</div>
-		<div class="field" id="data-type-dropdown">
-			<?php $val = Yii::app()->session['measure_data_type'];?>
-			<?php echo CHtml::activeDropDownList($model, 'measure_data_type', array('bigint'=>'integer', 'double precision'=>'float', 'money'=>'money', 'boolean'=>'boolean', 'text'=>'text'), array('options'=>array($val=>array('selected'=>true)))); ?>
-		</div>
-		<div class="error-msg">
-			<?php echo CHtml::error($model, 'measure_data_type'); ?>
-		</div>
-		
+	<?php echo CHtml::beginForm(array('settings/addnewmeasure?areaid='.($area_id).'&page='.($page)), 'post'); ?>	
 		<div class="label">
 			<?php echo CHtml::activeLabel($model, 'measure_name'); ?>
 		</div>

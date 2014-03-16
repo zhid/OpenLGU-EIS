@@ -8,7 +8,6 @@ Class AddMeasureFirstForm extends CFormModel
 	
 	//measure table attributes
 	public $measure_name;
-	public $measure_data_type;
 	public $description;
 
 	public function rules()
@@ -17,7 +16,7 @@ Class AddMeasureFirstForm extends CFormModel
 			array('number_of_rows', 'numerical'),
 			array('number_of_columns', 'numerical'),
 			array('number_of_rows, number_of_columns', 'required'),
-			array('measure_name, measure_data_type', 'required'),
+			array('measure_name', 'required'),
 			array('description', 'required'),
 			array('measure_name', 'checkmeasurename'),
 		);

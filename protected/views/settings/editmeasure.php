@@ -86,17 +86,6 @@
 						<?php echo CHtml::error($model, 'measure_name'); ?>
 					</div>
 					
-					
-					<div class="label">
-						<?php echo CHtml::activeLabel($model, 'measure_data_type'); ?>
-					</div>
-					<div class="field">
-						<?php echo CHtml::activeDropDownList($model, 'measure_data_type', array('bigint'=>'integer', 'double precision'=>'float', 'money'=>'money', 'boolean'=>'boolean', 'text'=>'text'), array('options'=>array($measure->measure_data_type=>array('selected'=>true)))); ?>
-					</div>
-					<div class="error-msg">
-						<?php echo CHtml::error($model, 'measure_data_type'); ?>
-					</div>
-					
 					<div class="label">
 						<?php echo CHtml::activeLabel($model, 'threshold'); ?>
 					</div>
