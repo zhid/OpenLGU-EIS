@@ -66,11 +66,20 @@ Class MainController extends CController
 				$criteria->params = array(':area_id'=>$_GET['areaid']);
 				$measures = Measure::model()->findAll($criteria);
 			
-				$this->render('dashboard', array('area'=>$area, 'measures'=>$measures));
+				if($measures != NULL)
+				{
+					$this->render('dashboard', array('area'=>$area, 'measures'=>$measures));
+				}
+				else
+				{	
+					Yii::app()->user->setFlash('main-flash', ($area->area_name)." has no measure!");
+					$url = $this->createUrl('/main');
+					$this->redirect($url);
+				}
 			}
 			else
 			{
-			
+				throw new CHttpException(404);
 			}
 		}
 		else
@@ -119,7 +128,7 @@ Class MainController extends CController
 		
 			//get row dimensions
 			$criteria = new CDbCriteria();
-			$criteria->select = 'row_id, row_name';
+			$criteria->select = 'row_id, row_name, row_data_type';
 			$criteria->condition = 'measure_id=:measure_id';
 			$criteria->params = array(':measure_id'=>$_POST['measureid']);
 			$criteria->addInCondition('row_id', $row_root);
@@ -127,6 +136,7 @@ Class MainController extends CController
 			
 			$radiobutton_row = array();
 			$row_dim = array();
+			$row_dim_type = array();
 			$selected;
 			$i = 0;
 			foreach($rows as $row)
@@ -135,6 +145,7 @@ Class MainController extends CController
 				if($i == 0){$selected = $row->row_name;}
 				
 				$row_dim[$i] = $row->row_name;
+				$row_dim_type[$i] = $row->row_data_type;
 				$i++;
 			}
 			
@@ -157,18 +168,32 @@ Class MainController extends CController
 				
 				$row_value_list = array();
 				$selected = array(); $j = 0;
-				foreach($rows as $row)
+
+				if($row_dim_type[$i] == 'text')
 				{
-					$row_value_list[$row[$attribute]] = $row[$attribute];
-					$selected[$j++] = $row[$attribute];
-				}	
-					
+					foreach($rows as $row)
+					{
+						$row_value_list["'".$row[$attribute]."'"] = $row[$attribute];
+						$selected[$j++] = "'".$row[$attribute]."'";
+					}	
+				}
+				else
+				{
+					foreach($rows as $row)
+					{
+						$row_value_list[$row[$attribute]] = $row[$attribute];
+						$selected[$j++] = $row[$attribute];
+					}	
+				}
+				
 				echo '<div class="filter_container" id="'.$attribute.'_container" style="display:none;">';
-				echo '<div class="filter_name">Filters</div>';
-				echo CHtml::beginForm('main', 'POST', array('id'=>$attribute.'_form'));
+				echo '<div class="filter_name">'.$row_dim[$i].' Filter</div>';
+				echo '<div id="filter-data">';
+				echo CHtml::beginForm('main', 'POST', array('name'=>$attribute.'_form'));
 				echo CHtml::checkBoxList($attribute.'_values', $selected, $row_value_list);
 				echo CHtml::endForm();
-				echo '<div class="filter_button"><button onclick="rowFilterButton('.$attribute.'_container)">Ok</button></div>';
+				echo '</div>';
+				echo '<div class="filter_button"><button onclick="rowFilterButton('.$attribute.'_container)">Filter</button></div>';
 				echo '</div>';
 			}
 			//end of row filter
@@ -197,7 +222,7 @@ Class MainController extends CController
 		
 			//get column dimension
 			$criteria = new CDbCriteria();
-			$criteria->select = 'column_id, column_name';
+			$criteria->select = 'column_id, column_name, column_data_type';
 			$criteria->condition = 'measure_id=:measure_id';
 			$criteria->params = array(':measure_id'=>$_POST['measureid']);
 			$criteria->addInCondition('column_id', $column_root);
@@ -211,6 +236,17 @@ Class MainController extends CController
 			{
 				$radiobutton_column[$column->column_name] = $column->column_name;
 				if($i == 0){$selected = $column->column_name; $i++;}
+				
+				$attribute = preg_replace('/\s+/', '_', strtolower($column->column_name));
+				echo '<div class="filter_container" id="'.$attribute.'_container" style="display:none;">';
+				echo '<div class="filter_name">Sort '.$column->column_name.' By:</div>';
+				echo '<div id="filter-data">';
+				echo CHtml::beginForm('main', 'POST', array('name'=>$attribute.'_form'));
+				echo CHtml::radioButtonList($attribute.'_values', 'NONE', array('NONE'=>'None', 'ASC'=>'Ascending', 'DESC'=>'Descending'));
+				echo CHtml::endForm();
+				echo '</div>';
+				echo '<div class="filter_button"><button onclick="columnFilterButton('.$attribute.'_container)">Sort</button></div>';
+				echo '</div>';
 			}
 			
 			echo '<div class="dashboard-side-name">Columns</div>';
@@ -223,6 +259,124 @@ Class MainController extends CController
 		else
 		{
 			throw new CHttpException(404);
+		}
+	}
+	
+	function actionQuerydata()
+	{
+		try
+		{
+			if(isset($_POST['isAjax']))
+			{
+				$criteria = new CDbCriteria();
+				$criteria->select = 'measure_name';
+				$criteria->condition = 'measure_id=:measure_id';
+				$criteria->params = array(':measure_id'=>$_POST['measureId']);
+				$measure = Measure::model()->find($criteria);
+				
+				$table = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
+				$row_name = $_POST['rowName']; $row_name = explode(",", $row_name);
+				$column_name = $_POST['columnName']; $column_name = explode(",", $column_name);
+			
+				$columns = $_POST['columnName'];
+				$columns = preg_replace('/\s+/', '_', strtolower($columns));
+				$columns = explode(",", $columns);
+				
+				$rows = $_POST['rowName'];
+				$rows = preg_replace('/\s+/', '_', strtolower($rows));
+				$rows = explode(",", $rows);
+				
+				$select_command = 'SELECT ';
+				$where_command = '';
+				$group_by_command = ' GROUP BY ';
+				$order_by_command = ' ORDER BY ';
+				$no_filter = "'no filter'";
+				for($i=0; $i<count($rows); $i++)
+				{
+					$select_command = $select_command.''.$rows[$i].', ';
+					if($_POST[$rows[$i].'_values'] !== '')
+					{
+						$where_command = $where_command .''.$rows[$i].' IN ('.$_POST[$rows[$i].'_values'].')';
+					}
+					else
+					{
+						$where_command = $where_command .''.$rows[$i].' IN ('.$no_filter.')';
+					}
+					$group_by_command = $group_by_command.''.$rows[$i];
+					if($i != count($rows)-1)
+					{ 
+						$where_command  = $where_command .' AND '; 
+						$group_by_command = $group_by_command.', ';
+					}
+				}
+				$order_count = 0;
+				for($i=0; $i<count($columns); $i++)
+				{
+					$select_command = $select_command.'sum('.$columns[$i].') "'.$columns[$i].'"';
+					if($_POST[$columns[$i].'_sort'] !== 'NONE')
+					{
+						if($order_count === 0)
+						{
+							$order_by_command = $order_by_command.''.$columns[$i].' '.$_POST[$columns[$i].'_sort'];
+						}
+						else
+						{
+							$order_by_command = $order_by_command.', '.$columns[$i].' '.$_POST[$columns[$i].'_sort'];
+						}
+						$order_count++;
+					}
+					if($i != count($columns)-1)
+					{ 
+						$select_command = $select_command.', ';
+					}
+				}
+				if($order_by_command !== ' ORDER BY ')
+				{
+					$select_command = $select_command.' FROM '.$table.' WHERE '.$where_command.$group_by_command.$order_by_command;
+				}
+				else
+				{
+					$select_command = $select_command.' FROM '.$table.' WHERE '.$where_command.$group_by_command;
+				}
+				$table_rows = Yii::app()->db->createCommand($select_command)->queryAll();
+				
+				if(count($table_rows) != 0)
+				{
+				echo '<table>';
+				echo '<tr>';
+				for($i=0; $i<count($rows); $i++)
+				{
+					echo '<th>'.$row_name[$i].'</th>';
+				}
+				for($i=0; $i<count($columns); $i++)
+				{
+					echo '<th>'.$column_name[$i].'</th>';
+				}
+				echo '</tr>';
+				foreach($table_rows as $table_row)
+				{
+					echo '<tr>';
+					for($i=0; $i<count($rows); $i++)
+					{
+						echo '<td class="drill-down" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)">'.$table_row[$rows[$i]].'</td>';
+					}
+					for($i=0; $i<count($columns); $i++)
+					{
+						echo '<td class="drill-down" columnname="'.$columns[$i].'" columndata="'.$table_row[$columns[$i]].'" onclick="columnDrillDown(this)">'.$table_row[$columns[$i]].'</td>';
+					}
+					echo '</tr>';
+				}
+				echo '</table>';
+				}
+				else
+				{
+					echo '<div id="comment-on-data">No Data Found!</div>';
+				}
+				//echo $select_command;
+			}
+		}
+		catch(Exception $exception) {
+			echo $exception;
 		}
 	}
 }

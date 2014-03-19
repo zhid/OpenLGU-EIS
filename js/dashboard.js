@@ -51,6 +51,10 @@ function loadHierarchyData()
 		{
 			sessionStorage.setItem('rowParentId', 0);
 		}
+		if(!sessionStorage.rowParentValue)
+		{
+			sessionStorage.setItem('rowParentValue', 'none');
+		}
 		if(!sessionStorage.rowDistanceLevel)
 		{
 			sessionStorage.setItem('rowDistanceLevel', 0);
@@ -59,6 +63,10 @@ function loadHierarchyData()
 		if(!sessionStorage.columnParentId)
 		{
 			sessionStorage.setItem('columnParentId', 0);
+		}
+		if(!sessionStorage.columnParentValue)
+		{
+			sessionStorage.setItem('columnParentValue', 'none');
 		}
 		if(!sessionStorage.columnDistanceLevel)
 		{
@@ -193,6 +201,7 @@ function showFilterButtons()
 		if(rows[i].checked)
 		{
 			row_filter = row_filter+'<button onclick="rowFilter(this)">'+(rows[i].value)+'</button>';
+			
 			row_name[j++] = rows[i].value;
 		}
 	}
@@ -207,7 +216,8 @@ function showFilterButtons()
 		if(columns[i].checked)
 		{
 			column_filter = column_filter+'<button onclick="columnFilter(this)">'+(columns[i].value)+'</button>';
-			column_name[j++] = columns[i].value
+			
+			column_name[j++] = columns[i].value;
 		}
 	}
 	if(window.sessionStorage)
@@ -224,18 +234,51 @@ function showFilterButtons()
 
 function rowFilter(rowname)
 {
+	hideFilters();
 	var row_name = rowname.innerHTML.toLowerCase();
 	while(row_name.search(/\s+/) != -1)
 	{
 		row_name = row_name.replace(/\s+/, "_");
 	}
 	var row_value = document.getElementById(row_name+'_container');
+	var overlay = document.getElementById('overlay');
 	row_value.style.display = "block";
+	overlay.style.display = "block";
+}
+
+function columnFilter(columnname)
+{
+	hideFilters();
+	var column_name = columnname.innerHTML.toLowerCase();
+	while(column_name.search(/\s+/) != -1)
+	{
+		column_name = column_name.replace(/\s+/, "_");
+	}
+	var column_value = document.getElementById(column_name+'_container');
+	var overlay = document.getElementById('overlay');
+	column_value.style.display = "block";
+	overlay.style.display = "block";
 }
 
 function rowFilterButton(rowFilter)
 {
 	rowFilter.style.display = "none";
+	overlay.style.display = "none";
+}
+
+function columnFilterButton(columnFilter)
+{
+	columnFilter.style.display = "none";
+	overlay.style.display = "none";
+}
+
+function hideFilters()
+{
+	var filters = document.getElementsByClassName('filter_container');
+	for(var i=0; i<filters.length; i++)
+	{
+		filters[i].style.display = "none";
+	}
 }
 
 function showDimensions()
@@ -335,7 +378,6 @@ function getViewMode()
 	{
 		if(chart_btn[i].getAttribute('ischartselected') === 'true')
 		{
-			//return chart_btn[i].getAttribute('type');
 			return i;
 		}
 	}
@@ -343,7 +385,140 @@ function getViewMode()
 
 function queryData()
 {
+	var form = document.forms.namedItem('queryDataForm');
+	var action = form.getAttribute('action');
+	var formData = new FormData();
+	
+	if(sessionStorage.getItem('columnName') === "")
+	{
+		var chart_container = document.getElementById('chart-container');
+		chart_container.innerHTML = '<div id="comment-on-data">Please Select a Column Dimension!</div>';
+		return false;
+	}
+	if(sessionStorage.getItem('rowName') === "")
+	{
+		var chart_container = document.getElementById('chart-container');
+		chart_container.innerHTML = '<div id="comment-on-data">Please Select a Row Dimension!</div>';
+		return false;
+	}
+	
+	var rows = sessionStorage.getItem('rowName').toLowerCase();
+	while(rows.search(/\s+/) != -1)
+	{
+		rows = rows.replace(/\s+/, "_");
+	}
+	rows = rows.split(',');
+	
+	var item_count, values = new Array(), item;
+	for(var i=0; i<rows.length; i++)
+	{
+		item_count = document.forms.namedItem(rows[i]+'_form').elements;
+		var checked = 0;
+		for(var j=0; j<item_count.length; j++)
+		{
+			item = document.forms.namedItem(rows[i]+'_form').elements[j];
+			if(item.checked)
+			{
+				values[checked++] = item.value;
+			}
+		}
+		
+		formData.append(rows[i]+'_values', values);
+	}
+	
+	var columns = sessionStorage.getItem('columnName').toLowerCase();
+	while(columns.search(/\s+/) != -1)
+	{
+		columns = columns.replace(/\s+/, "_");
+	}
+	columns = columns.split(',');
+	
+	for(var i=0; i<columns.length; i++)
+	{
+		var item = document.forms.namedItem(columns[i]+'_form').elements;
+		var value;
+		for(var j=0; j<item.length; j++)
+		{
+			if(item[j].checked === true)
+			{
+				value = item[j].value;
+				break;
+			}
+		}
+		
+		formData.append(columns[i]+'_sort', value);
+	}
+	
+	formData.append('isAjax', 1);
+	formData.append('measureId', sessionStorage.getItem('measureId'));
+	formData.append('columnName', sessionStorage.getItem('columnName'));
+	formData.append('columnDistanceLevel', sessionStorage.getItem('columnDistanceLevel'));
+	formData.append('columnParentId', sessionStorage.getItem('columnParentId'));
+	formData.append('rowName', sessionStorage.getItem('rowName'));
+	formData.append('rowDistanceLevel', sessionStorage.getItem('rowDistanceLevel'));
+	formData.append('rowParentId', sessionStorage.getItem('rowParentId'));
+	formData.append('viewMode', sessionStorage.getItem('viewMode'));
+	
+	if(window.sessionStorage)
+	{
+		var measureId = getMeasureSelected();
+	
+		sessionStorage.setItem('measureId', measureId);
+	}
+	
+	if(window.XMLHttpRequest)
+	{
+		request = new XMLHttpRequest();
+	}
+	else if(window.ActiveXObject)
+	{
+		try {
+			request = new ActiveXObject("Msxml2.XMLHTTP");
+		}
+		catch(exception) {
+			try {
+				request = new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			catch(exception) {
+			}
+		}
+	}
+	
+	if(!request)
+	{
+		alert('Sorry! The Browser cannot create an XMLHttp instance!');
+		return false;
+	}
+	
+	request.open("POST", action, true);
+	request.onreadystatechange = showQueryData;
+	request.send(formData);
+}
 
+function showQueryData()
+{
+	try {
+		if(request.readyState === 4 && request.status === 200)
+		{
+			var chart_container = document.getElementById('chart-container');
+			chart_container.innerHTML = request.responseText;
+		}
+	}
+	catch(exception) {
+		alert(exception);
+	}
+}
+
+function rowDrillDown(row)
+{
+	alert(row.getAttribute('rowname'));
+	alert(row.getAttribute('rowdata'));
+}
+
+function columnDrillDown(column)
+{
+	alert(column.getAttribute('columnname'));
+	alert(column.getAttribute('columndata'));
 }
 
 window.onload = function ()

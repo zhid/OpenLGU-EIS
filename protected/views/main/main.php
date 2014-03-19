@@ -5,6 +5,30 @@
 	}
 </style>
 
+<script>
+function openArea()
+{
+	if(window.sessionStorage)
+	{	
+		sessionStorage.clear();
+	}
+}
+</script>
+
+<?php
+	Yii::app()->clientScript->registerScript(
+	   'myHideEffect',
+	   '$("#main-flash").animate({opacity: 1.0}, 3000).fadeOut("slow");',
+	   CClientScript::POS_READY
+	);
+?>
+
+<?php if(Yii::app()->user->hasFlash('main-flash')):?>
+	<div id="main-flash">
+		<?php echo Yii::app()->user->getFlash('main-flash'); ?>
+	</div>
+<?php endif;?>
+
 <div id="app-name">
 	Executive Information System
 </div>
@@ -14,7 +38,7 @@
 		{
 			echo '
 				<div class="wrapper">
-					<a href="'.Yii::app()->getHomeUrl().'/main/dashboard?areaid='.($area->area_id).'">
+					<a onclick="openArea()" href="'.Yii::app()->getHomeUrl().'/main/dashboard?areaid='.($area->area_id).'">
 					<div class="area-border">
 						<div class="area-container">
 							<div class="color-rating-container">

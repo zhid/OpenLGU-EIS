@@ -36,6 +36,10 @@
 	
 	<div id="dashboard-view">
 		<div id="dashboard-panel">
+			<?php
+				echo CHtml::beginForm(array('main/querydata'), 'POST', array('name'=>'queryDataForm'));
+				echo CHtml::endForm();
+			?>
 			<div id="reload" class="panel-button"></div>
 			<div id="play" class="panel-button" onclick="queryData()"></div>
 			<div id="rollup" class="panel-button"></div>
