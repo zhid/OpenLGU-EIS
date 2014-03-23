@@ -3,6 +3,7 @@
 Class MainController extends CController
 {
 	public $defaultAction = 'panel';
+	public $image_map = "";
 	
 	public function filters()
 	{
@@ -92,9 +93,9 @@ Class MainController extends CController
 	{
 		if(isset($_POST['measureid']) && isset($_POST['isAjax']))
 		{	
-			$rowParentId = explode(".", $_POST['rowParentId']);
+			$rowParentId = explode(";", $_POST['rowParentId']);
 			$rowDistanceLevel = $_POST['rowDistanceLevel'];
-			$columnParentId = explode(".", $_POST['columnParentId']);
+			$columnParentId = explode(";", $_POST['columnParentId']);
 			$columnDistanceLevel = $_POST['columnDistanceLevel'];
 		
 			//find measure name
@@ -298,15 +299,15 @@ Class MainController extends CController
 				$rows = preg_replace('/\s+/', '_', strtolower($rows));
 				$rows = explode(",", $rows);
 				
-				$rowParentId = explode(".", $_POST['rowParentId']);
-				$rowParentValue = explode(".", $_POST['rowParentValue']);
-				$columnParentId = explode(".", $_POST['columnParentId']);
-				$columnParentValue = explode(".", $_POST['columnParentValue']);
+				$rowParentId = explode(';', $_POST['rowParentId']);
+				$rowParentValue = explode(';', $_POST['rowParentValue']);
+				$columnParentId = explode(';', $_POST['columnParentId']);
+				$columnParentValue = explode(';', $_POST['columnParentValue']);
 				$row_hierarchy_condition = ""; 
 				$column_hierarchy_condition = "";
 				$drilldown_hierarchy_condition = "";
 				
-				if($_POST['rowDistanceLevel'] != '0')
+				if($_POST['rowDistanceLevel'] != 0)
 				{
 					for($i=1; $i<count($rowParentId); $i++)
 					{	
@@ -320,7 +321,7 @@ Class MainController extends CController
 						}
 					}
 				}
-				if($_POST['columnDistanceLevel'] != '0')
+				if($_POST['columnDistanceLevel'] != 0)
 				{
 					for($i=1; $i<count($columnParentId); $i++)
 					{
@@ -412,6 +413,18 @@ Class MainController extends CController
 						case 'table':
 							$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
 							break;
+						case 'bar':
+							$this->renderBarView($table_rows, $columns, $column_name, $rows, $row_name);
+							break;
+						case 'line':
+							$this->renderLineView($table_rows, $columns, $column_name, $rows, $row_name);
+							break;
+						case 'pie':
+							$this->renderPieView($table_rows, $columns, $column_name, $rows, $row_name);
+							break;
+						case 'bubble':
+							$this->renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name);
+							break;
 					}
 				}
 				else
@@ -422,6 +435,333 @@ Class MainController extends CController
 		}
 		catch(Exception $exception) {
 			echo $exception;
+		}
+	}
+	
+	function renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+	
+		for($i=0; $i<count($columns); $i++)
+		{
+			$y_label = array();
+			$y_label_name = array();
+			$bubble_data = array();
+			$bubble_data_count = 1;
+			foreach($table_rows as $table_row) 
+			{
+				for($j=0; $j<count($rows); $j++)
+				{
+					$add_where = "";
+					$row_dimension = RowDimension::model()->find(array('select'=>'row_data_type', 'condition'=>'row_name=:row_name', 'params'=>array(':row_name'=>$row_name[$j])));
+					if($row_dimension->row_data_type == 'text')
+					{
+						$add_where = $rows[$j]. " = '".$table_row[$rows[$j]]."'";
+					}
+					else
+					{
+						$add_where = $rows[$j]. " = ".$table_row[$rows[$j]];
+					}
+				
+					$max_command = "SELECT max($columns[$i]) ".'"max"'." FROM $table"." WHERE ".$add_where;
+					
+					$query = Yii::app()->db->createCommand($max_command)->queryRow();
+					$max = (int)$query['max'];
+					
+					$increment = (int)($max / 4);
+					$cur = 0;
+					
+					//creating y bubble labels
+					for($inc=0; $inc<4; $inc++)
+					{
+						$y_label[$inc] = $cur + $increment;
+						$cur = $y_label[$inc];
+					}
+					
+					$each_bubble_count = array();
+					$count_command = "";
+					$y_label_name[0] = "";
+					for($inc=0; $inc<5; $inc++)
+					{
+						if($inc == 4)
+						{
+							$count_command = "SELECT count($columns[$i]) ".'"count"'." FROM $table WHERE $columns[$i] >= $max"." AND ".$add_where;
+							$y_label_name[$inc+1] = ">= $max";
+						}
+						else if($inc == 0)
+						{
+							$count_command = "SELECT count($columns[$i]) ".'"count"'." FROM $table WHERE $columns[$i] >= 0 AND $columns[$i] < $y_label[$inc]"." AND ".$add_where;
+							$y_label_name[$inc+1] = ">= 0 \n and < $y_label[$inc]";
+						}
+						else
+						{
+							$count_command = "SELECT count($columns[$i]) ".'"count"'." FROM $table WHERE $columns[$i] >= ".$y_label[$inc-1]." AND $columns[$i] < ".$y_label[$inc]." AND ".$add_where;
+							$y_label_name[$inc+1] = ">= ".$y_label[$inc-1]." \n and < ".$y_label[$inc];
+						}
+						//echo $count_command.'<br/>';
+						$query = Yii::app()->db->createCommand($count_command)->queryRow();
+						
+						$each_bubble_count[$inc] = $query['count'];
+					}
+					$y_label_name[6] = "";
+					$bubble_data[$bubble_data_count-1] = array($table_row[$rows[$j]], $bubble_data_count, 1, $each_bubble_count[0], 2, $each_bubble_count[1], 3, $each_bubble_count[2], 4, $each_bubble_count[3], 5, $each_bubble_count[4]);
+					
+					$bubble_data_count++;
+				}
+			}
+			$chart = new Chart();
+			if(count($columns) == 1)
+			{
+				$plot = new PHPlot(1000, 600);
+			}
+			else if(count($columns) == 2)
+			{
+				$plot = new PHPlot(500, 480);
+			}
+			else if(count($columns) == 3)
+			{
+				$plot = new PHPlot(335, 480);
+			}
+			else if(count($columns) >= 4)
+			{
+				$plot = new PHPlot(335, 280);
+			}
+			
+			$plot->SetPrintImage(false);
+			$plot->SetTitle($column_name[$i]);
+			$plot->SetDataType('data-data-xyz');
+			$plot->SetDataValues($bubble_data);
+			$plot->SetPlotType('bubbles');
+			$plot->SetDataColors('yellow');
+			$plot->SetDrawPlotAreaBackground(True);
+			$plot->SetPlotBgColor('SkyBlue');
+			$plot->SetLightGridColor('red');
+			$plot->SetImageBorderType('plain');
+			$plot->SetPlotBorderType('full');
+			$plot->SetXTickIncrement(1);
+			$plot->SetYTickIncrement(1);
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+			
+			//establish the handler for the Y label text:
+			$plot->SetYLabelType('custom', array($chart, 'get_label'), $y_label_name);
+			$plot->SetXTickPos('both');
+			$plot->SetYTickPos('both');
+			$plot->SetXDataLabelPos('both');
+			$plot->SetYTickLabelPos('plotleft');
+			$plot->SetDrawXGrid(True);
+			$plot->DrawGraph();
+			
+			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
+		}
+	}
+	
+	function renderPieView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		for($i=0; $i<count($columns); $i++)
+		{
+			$chart_data = array();
+			$chart_data_count = 0;
+			$legend_count=0;
+			$legend = array();
+			foreach($table_rows as $table_row)
+			{
+				$label = "";
+				for($j=0; $j<count($rows); $j++)
+				{
+					$label = $label.''.$table_row[$rows[$j]];
+					if($j != count($rows)-1)
+					{
+						$label = $label.'/';
+					}
+				}
+				$chart_data[$chart_data_count++] = array($label, $table_row[$columns[$i]]);
+				$legend[$legend_count++] = $label;
+			}
+			
+			//create and configure the PHPlot object.
+			if(count($columns) == 1)
+			{
+				$plot = new PHPlot(1000, 500);
+			}
+			else if(count($columns) == 2)
+			{
+				$plot = new PHPlot(500, 480);
+			}
+			else if(count($columns) == 3)
+			{
+				$plot = new PHPlot(335, 480);
+			}
+			else if(count($columns) >= 4)
+			{
+				$plot = new PHPlot(335, 280);
+			}
+			
+			$plot->SetPrintImage(False);
+			$plot->SetTitle($column_name[$i]);
+			$plot->SetImageBorderType('none');
+			$plot->SetDataType('text-data-single');
+			$plot->SetLegend($legend);
+			$plot->SetDataValues($chart_data);
+			$plot->SetPlotType('pie');
+			$plot->SetShading(0);
+			$plot->SetPieBorderColor('black');
+			list($width, $height) = $plot->GetLegendSize();
+			$plot->SetPieAutoSize(true);
+			$plot->SetMarginsPixels($width, NULL, NULL, NULL);
+			$plot->SetLegendPosition(0, 0, 'image', 0, 0, 5, 20);
+			
+			$plot->DrawGraph();
+			
+			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
+		}
+	}
+	
+	function renderLineView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		for($i=0; $i<count($columns); $i++)
+		{
+			$chart_data = array();
+			$chart_data_count = 0;
+			$line_number = 1.0;
+			foreach($table_rows as $table_row)
+			{
+				$label = "";
+				for($j=0; $j<count($rows); $j++)
+				{
+					$label = $label.''.$table_row[$rows[$j]];
+					if($j != count($rows)-1)
+					{
+						$label = $label.'/';
+					}
+				}
+				$chart_data[$chart_data_count++] = array($label, $line_number, $table_row[$columns[$i]]);
+				$line_number = $line_number + 1.0;
+			}
+			$chart_data[$chart_data_count] = array('', $line_number, );
+		
+			//create and configure the PHPlot object.
+			if(count($columns) == 1)
+			{
+				$plot = new PHPlot(1000, 500);
+			}
+			else if(count($columns) == 2)
+			{
+				$plot = new PHPlot(500, 480);
+			}
+			else if(count($columns) == 3)
+			{
+				$plot = new PHPlot(335, 480);
+			}
+			else if(count($columns) >= 4)
+			{
+				$plot = new PHPlot(335, 280);
+			}
+			
+			//set up the rest of the plot:
+			$plot->SetPrintImage(False);
+			$plot->SetImageBorderType('plain');
+			$plot->SetPlotType('linepoints');
+			$plot->SetDataType('data-data');
+			$plot->SetDataValues($chart_data);
+			$plot->SetTitle($column_name[$i]);
+			$plot->SetYDataLabelPos('plotin');
+			$plot->SetXTickIncrement(1.0);
+			$plot->SetDataColors(array('SlateBlue'));
+			$plot->SetPointShapes(array('dot'));
+
+			//set the data_points callback which will generate the image map.
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+			
+			//produce the graph; this also creates the image map via callback:
+			$plot->DrawGraph();
+
+			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
+		}
+	}
+	
+	function renderBarView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		$chart_data = array();
+		
+		for($i=0; $i<count($columns); $i++)
+		{
+			$chart_data_count = 0;
+			foreach($table_rows as $table_row)
+			{
+				$label = "";
+				for($j=0; $j<count($rows); $j++)
+				{
+					$label = $label.''.$table_row[$rows[$j]];
+					if($j != count($rows)-1)
+					{
+						$label = $label.'/';
+					}
+				}
+				$chart_data[$chart_data_count++] = array($label, $table_row[$columns[$i]]);
+			}
+			
+			$legend = "";
+			for($legend_count=0; $legend_count<count($row_name); $legend_count++)
+			{
+				$legend = $legend.$row_name[$legend_count];
+				if($legend_count != count($row_name)-1)
+				{
+					$legend = $legend.'/';
+				}
+			}
+			
+			$chart = new Chart();
+		
+			//create and configure the PHPlot object.
+			
+			if(count($columns) == 1)
+			{
+				$plot = new PHPlot(1000, 500);
+			}
+			else if(count($columns) == 2)
+			{
+				$plot = new PHPlot(500, 480);
+			}
+			else if(count($columns) == 3)
+			{
+				$plot = new PHPlot(335, 480);
+			}
+			else if(count($columns) >= 4)
+			{
+				$plot = new PHPlot(335, 280);
+			}
+			
+			//Disable error images, since this script produces HTML:
+			$plot->SetFailureImage(False);
+			
+			//disable automatic output of the image by DrawGraph():
+			$plot->SetPrintImage(False);
+			
+			//set up the rest of the plot:
+			//$plot->setLegend(array($legend));
+			$plot->SetTitle($column_name[$i]);
+			$plot->SetShading(0);
+			$plot->SetImageBorderType('plain');
+			$plot->SetDataValues($chart_data);
+			$plot->SetDataType('text-data');
+			$plot->SetPlotType('bars');
+			$plot->SetXTickPos('none');
+			$plot->SetYDataLabelPos('plotin');
+			
+			//set the data_points callback which will generate the image map.
+			$plot->SetCallback('data_points', array($chart, 'drawBarChart'));
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+			
+			//produce the graph; this also creates the image map via callback:
+			$plot->DrawGraph();
+
+			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image" usemap="#map">';
 		}
 	}
 	

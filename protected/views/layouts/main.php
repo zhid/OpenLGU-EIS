@@ -28,7 +28,6 @@
 		</div>
 		
 		<img id="eis-logo" src="<?php echo Yii::app()->request->baseUrl; ?>/images/EISlogo.png" alt="EIS" />
-
 		<?php echo $content; ?>
 
 		<div id="footer">

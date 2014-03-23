@@ -353,6 +353,21 @@ function changeDimensions()
 	}
 }
 
+function rollUp()
+{
+	var row_distance_level = parseInt(sessionStorage.getItem('rowDistanceLevel'));
+	
+	if(row_distance_level != '0')
+	{
+		revertRow();
+		showDimensions();
+	}
+	else
+	{
+		alert('Row is already root!');
+	}
+}
+
 function revertRow()
 {
 	if(window.sessionStorage)
@@ -361,15 +376,15 @@ function revertRow()
 		var row_parent_value = sessionStorage.getItem('rowParentValue');
 		var row_distance_level = parseInt(sessionStorage.getItem('rowDistanceLevel'));
 		
-		row_id = row_id.split('.');
-		row_parent_value = row_parent_value.split('.');
+		row_id = row_id.split(';');
+		row_parent_value = row_parent_value.split(';');
 		var new_row_id = row_id[0];
 		var new_row_parent_value = row_parent_value[0];
 		
 		for(var i=1; i<row_distance_level; i++)
 		{
-			new_row_id = new_row_id+'.'+row_id[i];
-			new_row_parent_value = new_row_parent_value+'.'+row_parent_value[i];
+			new_row_id = new_row_id+';'+row_id[i];
+			new_row_parent_value = new_row_parent_value+';'+row_parent_value[i];
 		}
 		sessionStorage.setItem('rowParentId', new_row_id);
 		sessionStorage.setItem('rowParentValue', new_row_parent_value);
@@ -385,15 +400,15 @@ function revertColumn()
 		var column_parent_value = sessionStorage.getItem('columnParentValue');
 		var column_distance_level = parseInt(sessionStorage.getItem('columnDistanceLevel'));
 		
-		column_id = column_id.split('.');
-		column_parent_value = column_parent_value.split('.');
+		column_id = column_id.split(';');
+		column_parent_value = column_parent_value.split(';');
 		var new_column_id = column_id[0];
 		var new_column_parent_value = column_parent_value[0];
 		
 		for(var i=1; i<column_distance_level; i++)
 		{
-			new_column_id = new_column_id+'.'+column_id[i];
-			new_column_parent_value = new_column_parent_value+'.'+column_parent_value[i];
+			new_column_id = new_column_id+';'+column_id[i];
+			new_column_parent_value = new_column_parent_value+';'+column_parent_value[i];
 		}
 		sessionStorage.setItem('columnParentId', new_column_id);
 		sessionStorage.setItem('columnParentValue', new_column_parent_value);
@@ -426,6 +441,7 @@ function setViewMode(viewmode)
 	{
 		sessionStorage.setItem('viewMode', viewmode.getAttribute('type'));
 	}
+	queryData();
 }
 
 function getViewMode()
@@ -549,8 +565,15 @@ function queryData()
 	}
 	
 	request.open("POST", action, true);
+	request.onprogress = showProgress;
 	request.onreadystatechange = showQueryData;
 	request.send(formData);
+}
+
+function showProgress()
+{
+	var overlay_progress = document.getElementById('overlay-progress');
+	overlay_progress.style.display = "block";
 }
 
 function showQueryData()
@@ -558,6 +581,9 @@ function showQueryData()
 	try {
 		if(request.readyState === 4 && request.status === 200)
 		{
+			var overlay_progress = document.getElementById('overlay-progress');
+			overlay_progress.style.display = "none";
+		
 			var chart_container = document.getElementById('chart-container');
 			chart_container.innerHTML = request.responseText;
 		}
@@ -579,14 +605,14 @@ function rowDrillDown(row)
 		var rowParentId = sessionStorage.getItem('rowParentId');
 		var rowParentValue = sessionStorage.getItem('rowParentValue');
 		
-		rowParentId = rowParentId+'.'+row.getAttribute('rowId');
+		rowParentId = rowParentId+';'+row.getAttribute('rowId');
 		if(row.getAttribute('type') == 'text')
 		{
-			rowParentValue = rowParentValue+".'"+row.getAttribute('rowdata')+"'";
+			rowParentValue = rowParentValue+";'"+row.getAttribute('rowdata')+"'";
 		}
 		else
 		{
-			rowParentValue = rowParentValue+"."+row.getAttribute('rowdata');
+			rowParentValue = rowParentValue+";"+row.getAttribute('rowdata');
 		}
 		
 		sessionStorage.setItem('rowParentId', rowParentId);
@@ -608,14 +634,14 @@ function columnDrillDown(column)
 		var columnParentId = sessionStorage.getItem('columnParentId');
 		var columnParentValue = sessionStorage.getItem('columnParentValue');
 		
-		columnParentId = columnParentId+'.'+column.getAttribute('columnId');
+		columnParentId = columnParentId+';'+column.getAttribute('columnId');
 		if(column.getAttribute('type') == 'text')
 		{
-			columnParentValue = columnParentValue+".'"+column.getAttribute('columndata')+"'";
+			columnParentValue = columnParentValue+";'"+column.getAttribute('columndata')+"'";
 		}
 		else
 		{
-			columnParentValue = columnParentValue+'.'+column.getAttribute('columndata');
+			columnParentValue = columnParentValue+';'+column.getAttribute('columndata');
 		}
 		
 		sessionStorage.setItem('columnParentId', columnParentId);

@@ -453,7 +453,7 @@ Class SettingsController extends CController
 			}
 		}
 		
-		$sess_var = array('measure_name', 'measure_data_type', 'number_of_rows', 'number_of_columns', 'description');
+		$sess_var = array('measure_name', 'number_of_rows', 'number_of_columns', 'description');
 		//removes session variables for measure's name, data type and number of rows and column
 		for($i=0; $i<5; $i++)
 		{
@@ -743,6 +743,7 @@ Class SettingsController extends CController
 					catch(Exception $exception) {
 						$measure_transaction->rollback();
 						Yii::app()->user->setFlash('editmeasure_failed', "Editing measure information failed!");
+						//echo $exception;
 					}
 					
 					$this->render('editmeasure', array('model'=>$model, 'area'=>$area, 'measure'=>$measure));

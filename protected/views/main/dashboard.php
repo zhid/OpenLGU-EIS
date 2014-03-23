@@ -35,14 +35,17 @@
 	</div>
 	
 	<div id="dashboard-view">
+		<div id="overlay-progress" style="display:none;">
+			Loading ...
+		</div>
+		
 		<div id="dashboard-panel">
 			<?php
 				echo CHtml::beginForm(array('main/querydata'), 'POST', array('name'=>'queryDataForm'));
 				echo CHtml::endForm();
 			?>
 			<div id="reload" class="panel-button"></div>
-			<div id="play" class="panel-button" onclick="queryData()"></div>
-			<div id="rollup" class="panel-button"></div>
+			<div id="rollup" class="panel-button" onclick="rollUp()"></div>
 			<div id="save" class="panel-button"></div>
 			<div id="alert" class="panel-button"></div>
 		</div>
@@ -67,7 +70,7 @@
 		<div id="bar" type="bar" class="charts" ischartselected="false"></div>
 		<div id="line" type="line" class="charts" ischartselected="false"></div>
 		<div id="pie" type="pie" class="charts" ischartselected="false"></div>
-		<div id="scatter" type="scatter" class="charts" ischartselected="false"></div>
+		<div id="bubble" type="bubble" class="charts" ischartselected="false"></div>
 		<div id="area" type="area" class="charts" ischartselected="false"></div>
 		<div id="map" type="map" class="charts" ischartselected="false"></div>
 	</div>

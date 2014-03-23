@@ -6,16 +6,16 @@
  * The followings are the available columns in table 'measure':
  * @property integer $measure_id
  * @property string $measure_name
- * @property string $measure_data_type
  * @property double $threshold
  * @property integer $alert_level
  * @property string $alert_time
  * @property integer $area_id
+ * @property string $description
  *
  * The followings are the available model relations:
  * @property Area $area
- * @property ColumnTable[] $columnTables
- * @property RowTable[] $rowTables
+ * @property RowDimension[] $rowDimensions
+ * @property ColumnDimension[] $columnDimensions
  */
 class Measure extends CActiveRecord
 {
@@ -35,14 +35,14 @@ class Measure extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('measure_data_type, area_id', 'required'),
+			array('area_id', 'required'),
 			array('alert_level, area_id', 'numerical', 'integerOnly'=>true),
 			array('threshold', 'numerical'),
 			array('measure_name, alert_time', 'length', 'max'=>100),
-			array('measure_data_type', 'length', 'max'=>30),
+			array('description', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('measure_id, measure_name, measure_data_type, threshold, alert_level, alert_time, area_id', 'safe', 'on'=>'search'),
+			array('measure_id, measure_name, threshold, alert_level, alert_time, area_id, description', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -55,8 +55,8 @@ class Measure extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'area' => array(self::BELONGS_TO, 'Area', 'area_id'),
-			'columnTables' => array(self::HAS_MANY, 'ColumnTable', 'measure_id'),
-			'rowTables' => array(self::HAS_MANY, 'RowTable', 'measure_id'),
+			'rowDimensions' => array(self::HAS_MANY, 'RowDimension', 'measure_id'),
+			'columnDimensions' => array(self::HAS_MANY, 'ColumnDimension', 'measure_id'),
 		);
 	}
 
@@ -68,11 +68,11 @@ class Measure extends CActiveRecord
 		return array(
 			'measure_id' => 'Measure',
 			'measure_name' => 'Measure Name',
-			'measure_data_type' => 'Measure Data Type',
 			'threshold' => 'Threshold',
 			'alert_level' => 'Alert Level',
 			'alert_time' => 'Alert Time',
 			'area_id' => 'Area',
+			'description' => 'Description',
 		);
 	}
 
@@ -96,11 +96,11 @@ class Measure extends CActiveRecord
 
 		$criteria->compare('measure_id',$this->measure_id);
 		$criteria->compare('measure_name',$this->measure_name,true);
-		$criteria->compare('measure_data_type',$this->measure_data_type,true);
 		$criteria->compare('threshold',$this->threshold);
 		$criteria->compare('alert_level',$this->alert_level);
 		$criteria->compare('alert_time',$this->alert_time,true);
 		$criteria->compare('area_id',$this->area_id);
+		$criteria->compare('description',$this->description,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

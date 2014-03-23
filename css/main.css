@@ -101,6 +101,20 @@ img#eis-logo {
 	font-size: 12px;
 	text-align: right;
 }
+#overlay-progress {
+	background-color: rgba(1, 1, 1, 0.1);
+	font-family: Arial;
+	font-size: 17px;
+	color: black;
+	position: absolute;
+	text-align: center;
+	top: 450px;
+	left: 600px;
+	z-index: 115;
+	padding-top: 15px;
+	height: 35px;
+	width: 250px;
+}
 /*css from this point is for the areas in grid layout*/
 #app-name {
 	margin-top: 20px;
@@ -213,11 +227,12 @@ img.pin {
 	border-top: 2px solid #414146;
 	border-bottom: 2px solid #414146;
 	width: 100%;
-	height: 600px;
+	min-height: 750px;
+	height: auto;
 }
 #dashboard-side {
 	float: left;
-	height: 600px;
+	height: 750px;
 	width: 15%;
 	overflow: scroll;
 }
@@ -268,7 +283,8 @@ img.pin {
 }
 #dashboard-view {
 	float: left;
-	height: 600px;
+	height: 750px;
+	min-height: auto;
 	width: 77%;
 }
 #dashboard-panel {
@@ -290,7 +306,6 @@ img.pin {
 	width: 30px;
 	cursor: pointer;
 }
-#play{background-image: url('../images/play.png');}
 #reload{background-image: url('../images/reload.png');}
 #rollup{background-image: url('../images/rollup.png');}
 #save{background-image: url('../images/save.png');}
@@ -340,7 +355,7 @@ img.pin {
 #dashboard-charts {
 	border-left: 2px solid #eaeaea;
 	float: right;
-	height: 600px;
+	height: 750px;
 	width: 7.8%;
 }
 .charts {
@@ -349,8 +364,8 @@ img.pin {
 	background-color: white;
 	border: 1px solid white;
 	background-size: 40px 40px;
-	margin-top: 5px;
-	margin-bottom: 5px;
+	margin-top: 20px;
+	margin-bottom: 20px;
 	margin-left: auto;
 	margin-right: auto;
 	height: 50px;
@@ -370,7 +385,7 @@ img.pin {
 #bar {background-image: url('../images/chart-bar.png');}
 #line {background-image: url('../images/chart-line.png');}
 #pie {background-image: url('../images/chart-pie.png');}
-#scatter {background-image: url('../images/chart-scatter.png');}
+#bubble {background-image: url('../images/chart-scatter.png');}
 #area{background-image: url('../images/chart-area.png');}
 #map{background-image: url('../images/chart-map.png');}
 .filter_container {
@@ -437,14 +452,15 @@ img.pin {
 	background-color: #f7f7f7;
 }
 #chart-container {
+	padding-top: 20px;
+	padding-left: 10px;
 	margin-left: auto;
 	margin-right: auto;
-	min-height: 483px;
+	min-height: 600px;
 	height: auto;
 	width: auto;
 }
 #chart-container table{
-	margin-top: 20px;
 	margin-left: auto;
 	margin-right: auto;
 	font-family: Arial;
