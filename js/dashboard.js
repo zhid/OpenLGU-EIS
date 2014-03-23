@@ -114,6 +114,16 @@ function loadViewModeData()
 				}
 			}
 		}
+		
+		if(sessionStorage.chartCollapse)
+		{
+			var chartCollapse = sessionStorage.getItem('chartCollapse');
+			setChartCollapse(chartCollapse);
+		}
+		else
+		{
+			getChartCollapse();
+		}
 	}
 }
 
@@ -290,6 +300,9 @@ function showDimensions()
 	formData.append('columnParentId', sessionStorage.columnParentId);
 	formData.append('columnDistanceLevel', sessionStorage.columnDistanceLevel);
 	
+	formData.append('rowParentId', sessionStorage.getItem('rowParentId'));
+	formData.append('rowParentValue', sessionStorage.getItem('rowParentValue'));
+	
 	if(window.sessionStorage)
 	{
 		var measureId = getMeasureSelected();
@@ -437,6 +450,7 @@ function setViewMode(viewmode)
 	viewmode.setAttribute('ischartselected', 'true');
 	viewmode.style.border = '1px solid black';
 	viewmode.style.backgroundColor = '#e0e0e0';
+	
 	if(window.sessionStorage)
 	{
 		sessionStorage.setItem('viewMode', viewmode.getAttribute('type'));
@@ -522,6 +536,7 @@ function queryData()
 	}
 	
 	formData.append('isAjax', 1);
+	formData.append('chartCollapse', sessionStorage.getItem('chartCollapse'));
 	formData.append('measureId', sessionStorage.getItem('measureId'));
 	formData.append('columnName', sessionStorage.getItem('columnName'));
 	formData.append('columnDistanceLevel', sessionStorage.getItem('columnDistanceLevel'));
@@ -565,15 +580,19 @@ function queryData()
 	}
 	
 	request.open("POST", action, true);
-	request.onprogress = showProgress;
+	request.onprogress = function(e) {showProgress(e)};
 	request.onreadystatechange = showQueryData;
 	request.send(formData);
 }
 
-function showProgress()
+function showProgress(e)
 {
 	var overlay_progress = document.getElementById('overlay-progress');
-	overlay_progress.style.display = "block";
+	if(e.lengthComputable)
+	{
+		overlay_progress.style.display = "block";
+		overlay_progress.innerHTML = "Loading ...";
+	}
 }
 
 function showQueryData()
@@ -581,11 +600,11 @@ function showQueryData()
 	try {
 		if(request.readyState === 4 && request.status === 200)
 		{
-			var overlay_progress = document.getElementById('overlay-progress');
-			overlay_progress.style.display = "none";
-		
 			var chart_container = document.getElementById('chart-container');
 			chart_container.innerHTML = request.responseText;
+			
+			var overlay_progress = document.getElementById('overlay-progress');
+			overlay_progress.style.display = "none";
 		}
 	}
 	catch(exception) {
@@ -649,6 +668,44 @@ function columnDrillDown(column)
 		sessionStorage.setItem('columnDistanceLevel', parseInt(column.getAttribute('distance'))+1);
 	}
 	showDimensions();
+}
+
+function chartCollapse(chart)
+{
+	//alert(chart.value);
+	if(window.sessionStorage)
+	{
+		sessionStorage.setItem('chartCollapse', chart.value);
+		queryData();
+	}
+}
+
+function setChartCollapse(chartCollapse)
+{
+	var collapse = document.forms.chartCollapsable.elements.collapseType;
+	
+	for(var i=0; i<collapse.length; i++)
+	{
+		if(collapse[i].value == chartCollapse)
+		{
+			collapse[i].selected = true;
+			break;
+		}
+	}
+}
+
+function getChartCollapse()
+{
+	var collapse = document.forms.chartCollapsable.elements.collapseType;
+	
+	for(var i=0; i<collapse.length; i++)
+	{
+		if(collapse[i].selected === true)
+		{
+			sessionStorage.setItem('chartCollapse', collapse[i].value);
+			break;
+		}
+	}
 }
 
 window.onload = function ()

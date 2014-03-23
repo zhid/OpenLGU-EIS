@@ -455,7 +455,7 @@ Class SettingsController extends CController
 		
 		$sess_var = array('measure_name', 'number_of_rows', 'number_of_columns', 'description');
 		//removes session variables for measure's name, data type and number of rows and column
-		for($i=0; $i<5; $i++)
+		for($i=0; $i<4; $i++)
 		{
 			if(isset(Yii::app()->session[$sess_var[$i]]))
 			{

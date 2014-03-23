@@ -15,12 +15,16 @@ Class MainController extends CController
 	public function accessRules()
 	{
 		return array (
+			array('deny',
+				'actions'=>array('querydata', 'renderNoCollapseAreaView', 'renderAreaView', 'renderNoCollapseBubbleView', 'renderBubbleView', 'renderNoCollapsePieView', 'renderPieView', 'renderNoCollapseLineView', 'renderLineView', 'renderNoCollapseBarView', 'renderBarView', 'renderTableView'),
+				'users'=>array('?'),
+			),
 			array ('deny',
-				'actions'=>array('panel', 'logout'),
+				'actions'=>array('index', 'panel', 'logout', 'main', 'dashboard', 'getdimension'),
 				'users'=>array('?'),
 			),
 			array ('allow',
-				'actions'=>array('index', 'panel', 'logout', 'getdimensions', 'dashboard'),
+				'actions'=>array('index', 'panel', 'logout', 'getdimensions', 'dashboard', 'main'),
 				'users'=>array('@'),
 			),
 		);
@@ -184,6 +188,25 @@ Class MainController extends CController
 			echo CHtml::endForm();
 			echo '</div>';
 			
+			$rowParentId = explode(';', $_POST['rowParentId']);
+			$rowParentValue = explode(';', $_POST['rowParentValue']);
+			$row_hierarchy_condition = "";
+			
+			if($_POST['rowDistanceLevel'] != 0)
+			{
+				for($i=1; $i<count($rowParentId); $i++)
+				{	
+					$dimension = RowDimension::model()->find(array('select'=>'row_name', 'condition'=>'row_id=:row_id', 'params'=>array(':row_id'=>(int)$rowParentId[$i])));
+					$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->row_name));
+					
+					$row_hierarchy_condition = $row_hierarchy_condition.''.$dimension_name.' = '.$rowParentValue[$i];
+					if($i != count($rowParentId)-1)
+					{
+						$row_hierarchy_condition = $row_hierarchy_condition.' AND ';
+					}
+				}
+			}
+			
 			//row filter
 			for($i=0; $i<count($row_dim); $i++)
 			{
@@ -192,6 +215,7 @@ Class MainController extends CController
 				$rows = Yii::app()->db->createCommand()
 					->selectDistinct($attribute)
 					->from($table)
+					->where($row_hierarchy_condition)
 					->queryAll();
 				
 				$row_value_list = array();
@@ -286,6 +310,8 @@ Class MainController extends CController
 				$criteria->condition = 'measure_id=:measure_id';
 				$criteria->params = array(':measure_id'=>$_POST['measureId']);
 				$measure = Measure::model()->find($criteria);
+				
+				$collapse = $_POST['chartCollapse'];
 				
 				$table = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
 				$row_name = $_POST['rowName']; $row_name = explode(",", $row_name);
@@ -406,24 +432,56 @@ Class MainController extends CController
 				}
 				$table_rows = Yii::app()->db->createCommand($select_command)->queryAll();
 				//echo $select_command;
+				
 				if(count($table_rows) != 0)
 				{
-					switch($_POST['viewMode'])
+					switch($_POST['chartCollapse'])
 					{
-						case 'table':
-							$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
+						case 'Collapse':
+							switch($_POST['viewMode'])
+							{
+								case 'table':
+									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'bar':
+									$this->renderBarView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'line':
+									$this->renderLineView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'pie':
+									$this->renderPieView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'bubble':
+									$this->renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'area':
+									$this->renderAreaView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+							}
 							break;
-						case 'bar':
-							$this->renderBarView($table_rows, $columns, $column_name, $rows, $row_name);
-							break;
-						case 'line':
-							$this->renderLineView($table_rows, $columns, $column_name, $rows, $row_name);
-							break;
-						case 'pie':
-							$this->renderPieView($table_rows, $columns, $column_name, $rows, $row_name);
-							break;
-						case 'bubble':
-							$this->renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name);
+						case 'No Collapse':
+							switch($_POST['viewMode'])
+							{
+								case 'table':
+									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'bar':
+									$this->renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'line':
+									$this->renderNoCollapseLineView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'pie':
+									$this->renderNoCollapsePieView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'bubble':
+									$this->renderNoCollapseBubbleView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+								case 'area':
+									$this->renderNoCollapseAreaView($table_rows, $columns, $column_name, $rows, $row_name);
+									break;
+							}
 							break;
 					}
 				}
@@ -438,78 +496,86 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name)
+	function renderNoCollapseAreaView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		$chart_data = array();
+		$chart_data_count = 0;
+		$chart_label = array();
+		
+		for($i=0; $i<count($column_name); $i++)
+		{
+			$chart_label[$i] = $column_name[$i];
+		}
+		
+		foreach($table_rows as $table_row)
+		{
+			$each_data_count = 0;
+			$label = "";
+			for($j=0; $j<count($rows); $j++)
+			{
+				$label = $label.''.$table_row[$rows[$j]];
+				if($j != count($rows)-1)
+				{
+					$label = $label.'/';
+				}
+			}
+			
+			$chart_data[$chart_data_count][$each_data_count++] = $label;
+			
+			for($j=0; $j<count($columns); $j++)
+			{
+				$chart_data[$chart_data_count][$each_data_count++] = $table_row[$columns[$j]]; 
+			}	
+			$chart_data_count++;
+		}
+		$plot = new PHPlot(1000, 600);
+		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+		$plot->SetDefaultTTFont('ARIAL.TTF');
+		$plot->SetFont('title', 'ARIALBD.TTF', 10);
+		$plot->SetFont('y_label', 'ARIAL.TTF', 8);
+		$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+		$plot->SetLegend($chart_label);
+		$plot->SetPrintImage(false);
+		$plot->SetImageBorderType('none');
+		$plot->SetPlotType('stackedarea');
+		$plot->SetDataType('text-data');
+		$plot->SetDataValues($chart_data);
+		$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+		$plot->SetXTickLabelPos('none');
+		$plot->SetXTickPos('none');
+		$plot->DrawGraph();
+	
+		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
+	}
+	
+	function renderAreaView($table_rows, $columns, $column_name, $rows, $row_name)
 	{
 		require_once 'chart/phplot.php';
 	
 		for($i=0; $i<count($columns); $i++)
 		{
-			$y_label = array();
-			$y_label_name = array();
-			$bubble_data = array();
-			$bubble_data_count = 1;
+			$chart_data = array();
+			$chart_data_counter = 0;
 			foreach($table_rows as $table_row) 
 			{
+				$label = "";
 				for($j=0; $j<count($rows); $j++)
 				{
-					$add_where = "";
-					$row_dimension = RowDimension::model()->find(array('select'=>'row_data_type', 'condition'=>'row_name=:row_name', 'params'=>array(':row_name'=>$row_name[$j])));
-					if($row_dimension->row_data_type == 'text')
+					$label = $label.''.$table_row[$rows[$j]];
+					if($j != count($rows)-1)
 					{
-						$add_where = $rows[$j]. " = '".$table_row[$rows[$j]]."'";
+						$label = $label.'/';
 					}
-					else
-					{
-						$add_where = $rows[$j]. " = ".$table_row[$rows[$j]];
-					}
-				
-					$max_command = "SELECT max($columns[$i]) ".'"max"'." FROM $table"." WHERE ".$add_where;
-					
-					$query = Yii::app()->db->createCommand($max_command)->queryRow();
-					$max = (int)$query['max'];
-					
-					$increment = (int)($max / 4);
-					$cur = 0;
-					
-					//creating y bubble labels
-					for($inc=0; $inc<4; $inc++)
-					{
-						$y_label[$inc] = $cur + $increment;
-						$cur = $y_label[$inc];
-					}
-					
-					$each_bubble_count = array();
-					$count_command = "";
-					$y_label_name[0] = "";
-					for($inc=0; $inc<5; $inc++)
-					{
-						if($inc == 4)
-						{
-							$count_command = "SELECT count($columns[$i]) ".'"count"'." FROM $table WHERE $columns[$i] >= $max"." AND ".$add_where;
-							$y_label_name[$inc+1] = ">= $max";
-						}
-						else if($inc == 0)
-						{
-							$count_command = "SELECT count($columns[$i]) ".'"count"'." FROM $table WHERE $columns[$i] >= 0 AND $columns[$i] < $y_label[$inc]"." AND ".$add_where;
-							$y_label_name[$inc+1] = ">= 0 \n and < $y_label[$inc]";
-						}
-						else
-						{
-							$count_command = "SELECT count($columns[$i]) ".'"count"'." FROM $table WHERE $columns[$i] >= ".$y_label[$inc-1]." AND $columns[$i] < ".$y_label[$inc]." AND ".$add_where;
-							$y_label_name[$inc+1] = ">= ".$y_label[$inc-1]." \n and < ".$y_label[$inc];
-						}
-						//echo $count_command.'<br/>';
-						$query = Yii::app()->db->createCommand($count_command)->queryRow();
-						
-						$each_bubble_count[$inc] = $query['count'];
-					}
-					$y_label_name[6] = "";
-					$bubble_data[$bubble_data_count-1] = array($table_row[$rows[$j]], $bubble_data_count, 1, $each_bubble_count[0], 2, $each_bubble_count[1], 3, $each_bubble_count[2], 4, $each_bubble_count[3], 5, $each_bubble_count[4]);
-					
-					$bubble_data_count++;
 				}
+				$chart_data[$chart_data_counter] = array($label, $table_row[$columns[$i]]);
+				
+				$chart_data_counter++;
 			}
+			
 			$chart = new Chart();
+		
 			if(count($columns) == 1)
 			{
 				$plot = new PHPlot(1000, 600);
@@ -526,33 +592,249 @@ Class MainController extends CController
 			{
 				$plot = new PHPlot(335, 280);
 			}
-			
 			$plot->SetPrintImage(false);
+			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+			$plot->SetDefaultTTFont('ARIAL.TTF');
+			$plot->SetFont('title', 'ARIALBD.TTF', 10);
+			$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+			$plot->SetFont('y_label', 'ARIAL.TTF', 8);
+			$plot->SetImageBorderType('none');
+			$plot->SetPlotType('stackedarea');
+			$plot->SetDataType('text-data');
+			$plot->SetDataValues($chart_data);
+			$plot->SetTitle($column_name[$i]);
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+			$plot->SetXTickLabelPos('none');
+			$plot->SetXTickPos('none');
+			$plot->DrawGraph();
+		
+			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
+		}
+	}
+	
+	function renderNoCollapseBubbleView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+	
+		$chart_data = array();
+		$chart_data_counter = 0;
+		$entry_counter = 1;
+		$chart_label_y = array();
+		$chart_label_y[0] = "";
+		
+		foreach($table_rows as $table_row) 
+		{
+			$label = "";
+			for($j=0; $j<count($rows); $j++)
+			{
+				$label = $label.''.$table_row[$rows[$j]];
+				if($j != count($rows)-1)
+				{
+					$label = $label.'/';
+				}
+			}
+			$chart_data[$chart_data_counter][0] = $label;
+			$chart_data[$chart_data_counter][1] = $entry_counter++;
+			$y_counter = 1;
+			
+			$chart_data_index = 2;
+			$label_index = 1;
+			for($i=0; $i<count($columns); $i++)
+			{
+				$chart_data[$chart_data_counter][$chart_data_index++] = $y_counter++;
+				$chart_data[$chart_data_counter][$chart_data_index++] = $table_row[$columns[$i]];
+				
+				$chart_label_y[$label_index++] = $column_name[$i];
+			}
+			$chart_label_y[$label_index] = "";
+			$chart_data_counter++;
+		}
+		$max_bubble_size = 0;
+		$bubble_denom = 9;
+		$max_bubble_size = 600 / $bubble_denom;
+		
+		$chart = new Chart();
+		$plot = new PHPlot(1000, 600);
+		$plot->SetPrintImage(false);
+		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+		$plot->SetDefaultTTFont('ARIAL.TTF');
+		$plot->SetFont('title', 'ARIALBD.TTF', 10);
+		$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+		$plot->SetFont('y_label', 'ARIAL.TTF', 8);
+		$plot->SetDataType('data-data-xyz');
+		$plot->SetDataValues($chart_data);
+		$plot->SetPlotType('bubbles');
+		$plot->SetDataColors('yellow');
+		$plot->SetDrawPlotAreaBackground(True);
+		$plot->SetPlotBgColor('SkyBlue');
+		$plot->SetLightGridColor('red');
+		$plot->SetImageBorderType('plain');
+		$plot->bubbles_max_size = $max_bubble_size;
+		$plot->bubbles_min_size = $max_bubble_size / 5;
+		$plot->SetPlotBorderType('full');
+		if(count($columns) > 1)
+		{
+			$plot->SetXTickIncrement(1);
+			$plot->SetYTickIncrement(1);
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+		}
+		else
+		{
+			$plot->SetXTickIncrement(1);
+			$plot->SetYTickIncrement(1);
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, 2);
+		}
+		$plot->SetYLabelType('custom', array($chart, 'get_label'), $chart_label_y);
+		$plot->SetXTickPos('both');
+		$plot->SetYTickPos('both');
+		$plot->SetXDataLabelPos('both');
+		$plot->SetYTickLabelPos('plotleft');
+		$plot->SetDrawXGrid(True);
+		$plot->DrawGraph();
+		
+		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
+	}
+	
+	function renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+	
+		for($i=0; $i<count($columns); $i++)
+		{
+			$chart_data = array();
+			$chart_data_counter = 0;
+			foreach($table_rows as $table_row) 
+			{
+				$label = "";
+				for($j=0; $j<count($rows); $j++)
+				{
+					$label = $label.''.$table_row[$rows[$j]];
+					if($j != count($rows)-1)
+					{
+						$label = $label.'/';
+					}
+				}
+				$chart_data[$chart_data_counter] = array($label, $chart_data_counter+1, 1, $table_row[$columns[$i]]);
+				//echo implode(' : ', $chart_data[$chart_data_counter]).'<br/>';
+				$chart_data_counter++;
+			}
+			
+			$chart = new Chart();
+			$max_bubble_size = 0;
+			$bubble_denom = 9;
+			if(count($columns) == 1)
+			{
+				$plot = new PHPlot(1000, 600);
+				$max_bubble_size = 600 / $bubble_denom;
+			}
+			else if(count($columns) == 2)
+			{
+				$plot = new PHPlot(500, 480);
+				$max_bubble_size = 480 / $bubble_denom;
+			}
+			else if(count($columns) == 3)
+			{
+				$plot = new PHPlot(335, 480);
+				$max_bubble_size = 480 / $bubble_denom;
+			}
+			else if(count($columns) >= 4)
+			{
+				$plot = new PHPlot(335, 280);
+				$max_bubble_size = 280 / $bubble_denom;
+			}
+			
+			$chart = new Chart();
+			$plot->SetPrintImage(false);
+			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+			$plot->SetDefaultTTFont('ARIAL.TTF');
+			$plot->SetFont('title', 'ARIALBD.TTF', 10);
+			$plot->SetFont('x_label', 'ARIAL.TTF', 8);
 			$plot->SetTitle($column_name[$i]);
 			$plot->SetDataType('data-data-xyz');
-			$plot->SetDataValues($bubble_data);
+			$plot->SetDataValues($chart_data);
 			$plot->SetPlotType('bubbles');
+			$plot->bubbles_max_size = $max_bubble_size;
+			$plot->bubbles_min_size = $max_bubble_size / 5;
 			$plot->SetDataColors('yellow');
 			$plot->SetDrawPlotAreaBackground(True);
 			$plot->SetPlotBgColor('SkyBlue');
 			$plot->SetLightGridColor('red');
-			$plot->SetImageBorderType('plain');
+			$plot->SetImageBorderType('none');
 			$plot->SetPlotBorderType('full');
 			$plot->SetXTickIncrement(1);
 			$plot->SetYTickIncrement(1);
-			$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+			$plot->SetPlotAreaWorld(NULL, NULL, NULL, 2);
 			
 			//establish the handler for the Y label text:
-			$plot->SetYLabelType('custom', array($chart, 'get_label'), $y_label_name);
+			$plot->SetYLabelType('custom', array($chart, 'get_label'), array("", "", ""));
 			$plot->SetXTickPos('both');
-			$plot->SetYTickPos('both');
+			$plot->SetYTickPos('none');
 			$plot->SetXDataLabelPos('both');
 			$plot->SetYTickLabelPos('plotleft');
 			$plot->SetDrawXGrid(True);
+			$plot->SetDrawYGrid(False);
 			$plot->DrawGraph();
 			
 			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 		}
+	}
+	
+	function renderNoCollapsePieView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		$chart_data = array();
+		$chart_data_count = 0;
+		$chart_label = array();
+		
+		for($i=0; $i<count($column_name); $i++)
+		{
+			$chart_label[$i] = $column_name[$i];
+		}
+		
+		foreach($table_rows as $table_row)
+		{
+			$each_data_count = 0;
+			$label = "";
+			for($j=0; $j<count($rows); $j++)
+			{
+				$label = $label.''.$table_row[$rows[$j]];
+				if($j != count($rows)-1)
+				{
+					$label = $label.'/';
+				}
+			}
+			
+			$chart_data[$chart_data_count][$each_data_count++] = '';
+			
+			for($j=0; $j<count($columns); $j++)
+			{
+				$chart_data[$chart_data_count][$each_data_count++] = $table_row[$columns[$j]]; 
+			}	
+			$chart_data_count++;
+		}
+		$plot = new PHPlot(1000, 500);
+		$plot->SetPrintImage(False);
+		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+		$plot->SetDefaultTTFont('ARIAL.TTF');
+		$plot->SetFont('title', 'ARIALBD.TTF', 10);
+		$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+		$plot->SetImageBorderType('none');
+		$plot->SetDataType('text-data');
+		$plot->SetLegend($chart_label);
+		$plot->SetDataValues($chart_data);
+		$plot->SetPlotType('pie');
+		$plot->SetShading(0);
+		$plot->SetDrawPieBorders(True);
+		$plot->SetPieBorderColor('white');
+		//list($width, $height) = $plot->GetLegendSize();
+		$plot->SetPieAutoSize(true);
+		//$plot->SetMarginsPixels($width, NULL, NULL, NULL);
+		//$plot->SetLegendPosition(0, 0, 'image', 0, 0, 5, 20);
+		
+		$plot->DrawGraph();
+		
+		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 	}
 	
 	function renderPieView($table_rows, $columns, $column_name, $rows, $row_name)
@@ -599,6 +881,10 @@ Class MainController extends CController
 			}
 			
 			$plot->SetPrintImage(False);
+			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+			$plot->SetDefaultTTFont('ARIAL.TTF');
+			$plot->SetFont('title', 'ARIALBD.TTF', 10);
+			$plot->SetFont('x_label', 'ARIAL.TTF', 8);
 			$plot->SetTitle($column_name[$i]);
 			$plot->SetImageBorderType('none');
 			$plot->SetDataType('text-data-single');
@@ -606,7 +892,8 @@ Class MainController extends CController
 			$plot->SetDataValues($chart_data);
 			$plot->SetPlotType('pie');
 			$plot->SetShading(0);
-			$plot->SetPieBorderColor('black');
+			$plot->SetDrawPieBorders(True);
+			$plot->SetPieBorderColor('white');
 			list($width, $height) = $plot->GetLegendSize();
 			$plot->SetPieAutoSize(true);
 			$plot->SetMarginsPixels($width, NULL, NULL, NULL);
@@ -616,6 +903,65 @@ Class MainController extends CController
 			
 			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 		}
+	}
+	
+	function renderNoCollapseLineView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		$chart_data = array();
+		$chart_data_count = 0;
+		$chart_label = array();
+		
+		for($i=0; $i<count($column_name); $i++)
+		{
+			$chart_label[$i] = $column_name[$i];
+		}
+		
+		foreach($table_rows as $table_row)
+		{
+			$each_data_count = 0;
+			$label = "";
+			for($j=0; $j<count($rows); $j++)
+			{
+				$label = $label.''.$table_row[$rows[$j]];
+				if($j != count($rows)-1)
+				{
+					$label = $label.'/';
+				}
+			}
+			
+			$chart_data[$chart_data_count][$each_data_count++] = $label;
+			
+			for($j=0; $j<count($columns); $j++)
+			{
+				$chart_data[$chart_data_count][$each_data_count++] = $table_row[$columns[$j]]; 
+			}	
+			$chart_data_count++;
+		}
+		$plot = new PHPlot(1000, 500);
+		//set up the rest of the plot:
+		$plot->SetPrintImage(False);
+		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+		$plot->SetLegend($chart_label);
+		$plot->SetDefaultTTFont('ARIAL.TTF');
+		$plot->SetFont('title', 'ARIALBD.TTF', 10);
+		$plot->SetFont('y_label', 'ARIAL.TTF', 8);
+		$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+		$plot->SetImageBorderType('none');
+		$plot->SetPlotType('linepoints');
+		$plot->SetDataType('text-data');
+		$plot->SetDataValues($chart_data);
+		$plot->SetYDataLabelPos('plotin');
+		$plot->SetXTickPos('none');
+
+		//set the data_points callback which will generate the image map.
+		$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+		
+		//produce the graph; this also creates the image map via callback:
+		$plot->DrawGraph();
+
+		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 	}
 	
 	function renderLineView($table_rows, $columns, $column_name, $rows, $row_name)
@@ -663,7 +1009,12 @@ Class MainController extends CController
 			
 			//set up the rest of the plot:
 			$plot->SetPrintImage(False);
-			$plot->SetImageBorderType('plain');
+			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+			$plot->SetDefaultTTFont('ARIAL.TTF');
+			$plot->SetFont('title', 'ARIALBD.TTF', 10);
+			$plot->SetFont('y_label', 'ARIAL.TTF', 8);
+			$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+			$plot->SetImageBorderType('none');
 			$plot->SetPlotType('linepoints');
 			$plot->SetDataType('data-data');
 			$plot->SetDataValues($chart_data);
@@ -681,6 +1032,76 @@ Class MainController extends CController
 
 			echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 		}
+	}
+	
+	function renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		require_once 'chart/phplot.php';
+		
+		$chart_data = array();
+		$chart_data_count = 0;
+		$chart_label = array();
+		
+		for($i=0; $i<count($column_name); $i++)
+		{
+			$chart_label[$i] = $column_name[$i];
+		}
+		
+		foreach($table_rows as $table_row)
+		{
+			$each_data_count = 0;
+			$label = "";
+			for($j=0; $j<count($rows); $j++)
+			{
+				$label = $label.''.$table_row[$rows[$j]];
+				if($j != count($rows)-1)
+				{
+					$label = $label.'/';
+				}
+			}
+			
+			$chart_data[$chart_data_count][$each_data_count++] = $label;
+			
+			for($j=0; $j<count($columns); $j++)
+			{
+				$chart_data[$chart_data_count][$each_data_count++] = $table_row[$columns[$j]]; 
+			}	
+			$chart_data_count++;
+		}
+		
+		$chart = new Chart();
+		
+		$plot = new PHPlot(1000, 500);
+		
+		//Disable error images, since this script produces HTML:
+		$plot->SetFailureImage(False);
+		
+		//disable automatic output of the image by DrawGraph():
+		$plot->SetPrintImage(False);
+		
+		//set up the rest of the plot:
+		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+		$plot->SetDefaultTTFont('ARIAL.TTF');
+		$plot->SetFont('title', 'ARIALBD.TTF', 10);
+		$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+		$plot->SetFont('y_label', 'ARIAL.TTF', 8);
+		$plot->SetLegend($chart_label);
+		$plot->SetShading(0);
+		$plot->SetImageBorderType('none');
+		$plot->SetDataValues($chart_data);
+		$plot->SetDataType('text-data');
+		$plot->SetPlotType('bars');
+		$plot->SetXTickPos('none');
+		$plot->SetYDataLabelPos('plotin');
+		
+		//set the data_points callback which will generate the image map.
+		$plot->SetCallback('data_points', array($chart, 'drawBarChart'));
+		$plot->SetPlotAreaWorld(NULL, NULL, NULL, NULL);
+		
+		//produce the graph; this also creates the image map via callback:
+		$plot->DrawGraph();
+
+		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image" usemap="#map">';
 	}
 	
 	function renderBarView($table_rows, $columns, $column_name, $rows, $row_name)
@@ -744,10 +1165,14 @@ Class MainController extends CController
 			$plot->SetPrintImage(False);
 			
 			//set up the rest of the plot:
-			//$plot->setLegend(array($legend));
+			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
+			$plot->SetDefaultTTFont('ARIAL.TTF');
+			$plot->SetFont('title', 'ARIALBD.TTF', 10);
+			$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+			$plot->SetFont('y_label', 'ARIAL.TTF', 8);
 			$plot->SetTitle($column_name[$i]);
 			$plot->SetShading(0);
-			$plot->SetImageBorderType('plain');
+			$plot->SetImageBorderType('none');
 			$plot->SetDataValues($chart_data);
 			$plot->SetDataType('text-data');
 			$plot->SetPlotType('bars');
@@ -767,6 +1192,10 @@ Class MainController extends CController
 	
 	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name)
 	{
+		echo '<div id="dashboard-drilldown">
+			<div id="rollup" class="rollup-panel-button" onclick="rollUp()"></div>
+		</div>';
+	
 		echo '<table>';
 		echo '<tr>';
 		for($i=0; $i<count($rows); $i++)

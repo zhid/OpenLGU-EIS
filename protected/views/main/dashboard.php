@@ -45,7 +45,6 @@
 				echo CHtml::endForm();
 			?>
 			<div id="reload" class="panel-button"></div>
-			<div id="rollup" class="panel-button" onclick="rollUp()"></div>
 			<div id="save" class="panel-button"></div>
 			<div id="alert" class="panel-button"></div>
 		</div>
@@ -65,6 +64,14 @@
 	
 	<div id="dashboard-charts">
 		<div id="mode">View Mode</div>
+		<div id="chart-collapse">
+			<form id="chartCollapsable" name="chartCollapsable">
+			<select name="collapseType" onchange="chartCollapse(this)">
+				<option selected="selected">Collapse</option>
+				<option>No Collapse</option>
+			</select>
+			</form>
+		</div>
 		<input id="view_mode" type="hidden" value="" />
 		<div id="table" type="table" class="charts" ischartselected="true"></div>
 		<div id="bar" type="bar" class="charts" ischartselected="false"></div>
