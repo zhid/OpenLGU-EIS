@@ -39,8 +39,8 @@ function init()
 	
 	loadHierarchyData();
 	loadMeasureData();
-	showDimensions();
 	loadViewModeData();
+	showDimensions();
 }
 
 function loadHierarchyData()
@@ -230,6 +230,7 @@ function showFilterButtons()
 	
 	row_filter_container.innerHTML = row_filter;
 	column_filter_container.innerHTML = column_filter;
+	queryData();
 }
 
 function rowFilter(rowname)
@@ -241,9 +242,7 @@ function rowFilter(rowname)
 		row_name = row_name.replace(/\s+/, "_");
 	}
 	var row_value = document.getElementById(row_name+'_container');
-	var overlay = document.getElementById('overlay');
 	row_value.style.display = "block";
-	overlay.style.display = "block";
 }
 
 function columnFilter(columnname)
@@ -255,21 +254,19 @@ function columnFilter(columnname)
 		column_name = column_name.replace(/\s+/, "_");
 	}
 	var column_value = document.getElementById(column_name+'_container');
-	var overlay = document.getElementById('overlay');
 	column_value.style.display = "block";
-	overlay.style.display = "block";
 }
 
 function rowFilterButton(rowFilter)
 {
 	rowFilter.style.display = "none";
-	overlay.style.display = "none";
+	queryData();
 }
 
 function columnFilterButton(columnFilter)
 {
 	columnFilter.style.display = "none";
-	overlay.style.display = "none";
+	queryData();
 }
 
 function hideFilters()
@@ -335,13 +332,72 @@ function changeDimensions()
 		if(request.readyState === 4 && request.status === 200)
 		{
 			var dimensions = document.getElementById('dimensions');
-			dimensions.innerHTML = request.responseText;
-			loadDimensionsData();
-			showFilterButtons();
+			if(request.responseText != 'no-row-drilldown' && request.responseText != 'no-column-drilldown')
+			{
+				dimensions.innerHTML = request.responseText;
+				loadDimensionsData();
+				showFilterButtons();
+			}
+			else if(request.responseText == 'no-row-drilldown')
+			{
+				revertRow();
+			}
+			else if(request.responseText == 'no-column-drilldown')
+			{
+				revertColumn();
+			}
 		}
 	}
 	catch(exception) {
 		alert(exception);
+	}
+}
+
+function revertRow()
+{
+	if(window.sessionStorage)
+	{
+		var row_id = sessionStorage.getItem('rowParentId');
+		var row_parent_value = sessionStorage.getItem('rowParentValue');
+		var row_distance_level = parseInt(sessionStorage.getItem('rowDistanceLevel'));
+		
+		row_id = row_id.split('.');
+		row_parent_value = row_parent_value.split('.');
+		var new_row_id = row_id[0];
+		var new_row_parent_value = row_parent_value[0];
+		
+		for(var i=1; i<row_distance_level; i++)
+		{
+			new_row_id = new_row_id+'.'+row_id[i];
+			new_row_parent_value = new_row_parent_value+'.'+row_parent_value[i];
+		}
+		sessionStorage.setItem('rowParentId', new_row_id);
+		sessionStorage.setItem('rowParentValue', new_row_parent_value);
+		sessionStorage.setItem('rowDistanceLevel', row_distance_level - 1);
+	}
+}
+
+function revertColumn()
+{
+	if(window.sessionStorage)
+	{
+		var column_id = sessionStorage.getItem('columnParentId');
+		var column_parent_value = sessionStorage.getItem('columnParentValue');
+		var column_distance_level = parseInt(sessionStorage.getItem('columnDistanceLevel'));
+		
+		column_id = column_id.split('.');
+		column_parent_value = column_parent_value.split('.');
+		var new_column_id = column_id[0];
+		var new_column_parent_value = column_parent_value[0];
+		
+		for(var i=1; i<column_distance_level; i++)
+		{
+			new_column_id = new_column_id+'.'+column_id[i];
+			new_column_parent_value = new_column_parent_value+'.'+column_parent_value[i];
+		}
+		sessionStorage.setItem('columnParentId', new_column_id);
+		sessionStorage.setItem('columnParentValue', new_column_parent_value);
+		sessionStorage.setItem('columnDistanceLevel', column_distance_level - 1);
 	}
 }
 
@@ -454,9 +510,11 @@ function queryData()
 	formData.append('columnName', sessionStorage.getItem('columnName'));
 	formData.append('columnDistanceLevel', sessionStorage.getItem('columnDistanceLevel'));
 	formData.append('columnParentId', sessionStorage.getItem('columnParentId'));
+	formData.append('columnParentValue', sessionStorage.getItem('columnParentValue'));
 	formData.append('rowName', sessionStorage.getItem('rowName'));
 	formData.append('rowDistanceLevel', sessionStorage.getItem('rowDistanceLevel'));
 	formData.append('rowParentId', sessionStorage.getItem('rowParentId'));
+	formData.append('rowParentValue', sessionStorage.getItem('rowParentValue'));
 	formData.append('viewMode', sessionStorage.getItem('viewMode'));
 	
 	if(window.sessionStorage)
@@ -511,14 +569,60 @@ function showQueryData()
 
 function rowDrillDown(row)
 {
+	/*alert(row.getAttribute('rowId'));
 	alert(row.getAttribute('rowname'));
 	alert(row.getAttribute('rowdata'));
+	alert(row.getAttribute('isBottom'));
+	alert(row.getAttribute('isTop'));*/
+	if(window.sessionStorage)
+	{
+		var rowParentId = sessionStorage.getItem('rowParentId');
+		var rowParentValue = sessionStorage.getItem('rowParentValue');
+		
+		rowParentId = rowParentId+'.'+row.getAttribute('rowId');
+		if(row.getAttribute('type') == 'text')
+		{
+			rowParentValue = rowParentValue+".'"+row.getAttribute('rowdata')+"'";
+		}
+		else
+		{
+			rowParentValue = rowParentValue+"."+row.getAttribute('rowdata');
+		}
+		
+		sessionStorage.setItem('rowParentId', rowParentId);
+		sessionStorage.setItem('rowParentValue', rowParentValue);
+		sessionStorage.setItem('rowDistanceLevel', parseInt(row.getAttribute('distance'))+1);
+	}
+	showDimensions();
 }
 
 function columnDrillDown(column)
 {
+	/*alert(column.getAttribute('columnId'));
 	alert(column.getAttribute('columnname'));
 	alert(column.getAttribute('columndata'));
+	alert(column.getAttribute('isBottom'));
+	alert(column.getAttribute('isTop'));*/
+	if(window.sessionStorage)
+	{	
+		var columnParentId = sessionStorage.getItem('columnParentId');
+		var columnParentValue = sessionStorage.getItem('columnParentValue');
+		
+		columnParentId = columnParentId+'.'+column.getAttribute('columnId');
+		if(column.getAttribute('type') == 'text')
+		{
+			columnParentValue = columnParentValue+".'"+column.getAttribute('columndata')+"'";
+		}
+		else
+		{
+			columnParentValue = columnParentValue+'.'+column.getAttribute('columndata');
+		}
+		
+		sessionStorage.setItem('columnParentId', columnParentId);
+		sessionStorage.setItem('columnParentValue', columnParentValue);
+		sessionStorage.setItem('columnDistanceLevel', parseInt(column.getAttribute('distance'))+1);
+	}
+	showDimensions();
 }
 
 window.onload = function ()

@@ -91,10 +91,10 @@ Class MainController extends CController
 	function actionGetdimensions()
 	{
 		if(isset($_POST['measureid']) && isset($_POST['isAjax']))
-		{
-			$rowParentId = $_POST['rowParentId'];
+		{	
+			$rowParentId = explode(".", $_POST['rowParentId']);
 			$rowDistanceLevel = $_POST['rowDistanceLevel'];
-			$columnParentId = $_POST['columnParentId'];
+			$columnParentId = explode(".", $_POST['columnParentId']);
 			$columnDistanceLevel = $_POST['columnDistanceLevel'];
 		
 			//find measure name
@@ -107,17 +107,44 @@ Class MainController extends CController
 			//find row dimension with distance level of 0
 			$criteria = new CDbCriteria();
 			$criteria->select = 'category_id';
-			if($rowDistanceLevel == 0)
+			if($rowDistanceLevel == '0')
 			{
 				$criteria->condition = 'distance_level=:distance_level';
-				$criteria->params = array(':distance_level'=>$rowDistanceLevel);
+				$criteria->params = array(':distance_level'=>(int)$rowDistanceLevel);
 			}
 			else
 			{
 				$criteria->condition = 'distance_level=:distance_level AND parent_id=:parent_id';
-				$criteria->params = array(':distance_level'=>$rowDistanceLevel, ':parent_id'=>$rowParentId);
+				$criteria->params = array(':distance_level'=>(int)$rowDistanceLevel, ':parent_id'=>$rowParentId[$rowDistanceLevel]);
 			}
 			$row_hierarchies = RowHierarchy::model()->findAll($criteria);
+			
+			if($row_hierarchies == NULL)
+			{
+				echo "no-row-drilldown";
+				return;
+			}
+			
+			//find column dimension with distance level of 0
+			$criteria = new CDbCriteria();
+			$criteria->select = 'category_id';
+			if($columnDistanceLevel == 0)
+			{
+				$criteria->condition = 'distance_level=:distance_level';
+				$criteria->params = array(':distance_level'=>(int)$columnDistanceLevel);
+			}
+			else
+			{
+				$criteria->condition = 'distance_level=:distance_level AND parent_id=:parent_id';
+				$criteria->params = array(':distance_level'=>(int)$columnDistanceLevel, ':parent_id'=>$columnParentId[$columnDistanceLevel]);
+			}
+			$column_hierarchies = ColumnHierarchy::model()->findAll($criteria);
+			
+			if($column_hierarchies == NULL)
+			{
+				echo "no-column-drilldown";
+				return;
+			}
 			
 			$row_root = array();
 			$i = 0;
@@ -198,21 +225,6 @@ Class MainController extends CController
 			}
 			//end of row filter
 			
-			//find column dimension with distance level of 0
-			$criteria = new CDbCriteria();
-			$criteria->select = 'category_id';
-			if($columnDistanceLevel == 0)
-			{
-				$criteria->condition = 'distance_level=:distance_level';
-				$criteria->params = array(':distance_level'=>$columnDistanceLevel);
-			}
-			else
-			{
-				$criteria->condition = 'distance_level=:distance_level AND parent_id=:parent_id';
-				$criteria->params = array(':distance_level'=>$columnDistanceLevel, ':parent_id'=>$columnParentId);
-			}
-			$column_hierarchies = ColumnHierarchy::model()->findAll($criteria);
-			
 			$column_root = array();
 			$i = 0;
 			foreach($column_hierarchies as $column_hierarchy)
@@ -286,6 +298,59 @@ Class MainController extends CController
 				$rows = preg_replace('/\s+/', '_', strtolower($rows));
 				$rows = explode(",", $rows);
 				
+				$rowParentId = explode(".", $_POST['rowParentId']);
+				$rowParentValue = explode(".", $_POST['rowParentValue']);
+				$columnParentId = explode(".", $_POST['columnParentId']);
+				$columnParentValue = explode(".", $_POST['columnParentValue']);
+				$row_hierarchy_condition = ""; 
+				$column_hierarchy_condition = "";
+				$drilldown_hierarchy_condition = "";
+				
+				if($_POST['rowDistanceLevel'] != '0')
+				{
+					for($i=1; $i<count($rowParentId); $i++)
+					{	
+						$dimension = RowDimension::model()->find(array('select'=>'row_name', 'condition'=>'row_id=:row_id', 'params'=>array(':row_id'=>(int)$rowParentId[$i])));
+						$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->row_name));
+						
+						$row_hierarchy_condition = $row_hierarchy_condition.''.$dimension_name.' = '.$rowParentValue[$i];
+						if($i != count($rowParentId)-1)
+						{
+							$row_hierarchy_condition = $row_hierarchy_condition.' AND ';
+						}
+					}
+				}
+				if($_POST['columnDistanceLevel'] != '0')
+				{
+					for($i=1; $i<count($columnParentId); $i++)
+					{
+						$dimension = ColumnDimension::model()->find(array('select'=>'column_name', 'condition'=>'column_id=:column_id', 'params'=>array(':column_id'=>(int)$columnParentId[$i])));
+						$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->column_name));
+					
+						$column_hierarchy_condition = $column_hierarchy_condition.''.$dimension_name.' = '.$columnParentValue[$i];
+						if($i != count($columnParentId)-1)
+						{
+							$column_hierarchy_condition = $column_hierarchy_condition.' AND ';
+						}
+					}
+				}
+				if($row_hierarchy_condition != "" && $column_hierarchy_condition == "")
+				{
+					$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND ';
+				}
+				else if($row_hierarchy_condition == "" && $column_hierarchy_condition != "")
+				{
+					$drilldown_hierarchy_condition = $column_hierarchy_condition.' AND ';
+				}
+				else if($row_hierarchy_condition != "" && $column_hierarchy_condition != "")
+				{
+					$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND '.$column_hierarchy_condition.' AND ';
+				}
+				else
+				{
+					$drilldown_hierarchy_condition = "";
+				}
+				
 				$select_command = 'SELECT ';
 				$where_command = '';
 				$group_by_command = ' GROUP BY ';
@@ -332,51 +397,66 @@ Class MainController extends CController
 				}
 				if($order_by_command !== ' ORDER BY ')
 				{
-					$select_command = $select_command.' FROM '.$table.' WHERE '.$where_command.$group_by_command.$order_by_command;
+					$select_command = $select_command.' FROM '.$table.' WHERE '.$drilldown_hierarchy_condition.$where_command.$group_by_command.$order_by_command;
 				}
 				else
 				{
-					$select_command = $select_command.' FROM '.$table.' WHERE '.$where_command.$group_by_command;
+					$select_command = $select_command.' FROM '.$table.' WHERE '.$drilldown_hierarchy_condition.$where_command.$group_by_command;
 				}
 				$table_rows = Yii::app()->db->createCommand($select_command)->queryAll();
-				
+				//echo $select_command;
 				if(count($table_rows) != 0)
 				{
-				echo '<table>';
-				echo '<tr>';
-				for($i=0; $i<count($rows); $i++)
-				{
-					echo '<th>'.$row_name[$i].'</th>';
-				}
-				for($i=0; $i<count($columns); $i++)
-				{
-					echo '<th>'.$column_name[$i].'</th>';
-				}
-				echo '</tr>';
-				foreach($table_rows as $table_row)
-				{
-					echo '<tr>';
-					for($i=0; $i<count($rows); $i++)
+					switch($_POST['viewMode'])
 					{
-						echo '<td class="drill-down" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)">'.$table_row[$rows[$i]].'</td>';
+						case 'table':
+							$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
+							break;
 					}
-					for($i=0; $i<count($columns); $i++)
-					{
-						echo '<td class="drill-down" columnname="'.$columns[$i].'" columndata="'.$table_row[$columns[$i]].'" onclick="columnDrillDown(this)">'.$table_row[$columns[$i]].'</td>';
-					}
-					echo '</tr>';
-				}
-				echo '</table>';
 				}
 				else
 				{
 					echo '<div id="comment-on-data">No Data Found!</div>';
 				}
-				//echo $select_command;
 			}
 		}
 		catch(Exception $exception) {
 			echo $exception;
 		}
+	}
+	
+	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name)
+	{
+		echo '<table>';
+		echo '<tr>';
+		for($i=0; $i<count($rows); $i++)
+		{
+			echo '<th>'.$row_name[$i].'</th>';
+		}
+		for($i=0; $i<count($columns); $i++)
+		{
+			echo '<th>'.$column_name[$i].'</th>';
+		}
+		echo '</tr>';
+		foreach($table_rows as $table_row)
+		{
+			echo '<tr>';
+			for($i=0; $i<count($rows); $i++)
+			{
+				$row_dimension = RowDimension::model()->find(array('select'=>'row_id, row_data_type', 'condition'=>'row_name=:row_name', 'params'=>array(':row_name'=>$row_name[$i])));
+				$row_hierarchy = RowHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$row_dimension->row_id)));
+				
+				echo '<td class="drill-down" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)">'.$table_row[$rows[$i]].'</td>';
+			}
+			for($i=0; $i<count($columns); $i++)
+			{
+				$column_dimension = ColumnDimension::model()->find(array('select'=>'column_id, column_data_type', 'condition'=>'column_name=:column_name', 'params'=>array(':column_name'=>$column_name[$i])));
+				$column_hierarchy = ColumnHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$column_dimension->column_id)));
+			
+				echo '<td class="drill-down" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$columns[$i].'" columndata="'.$table_row[$columns[$i]].'" onclick="columnDrillDown(this)">'.$table_row[$columns[$i]].'</td>';
+			}
+			echo '</tr>';
+		}
+		echo '</table>';
 	}
 }
