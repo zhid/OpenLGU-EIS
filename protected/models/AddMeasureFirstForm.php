@@ -18,8 +18,26 @@ Class AddMeasureFirstForm extends CFormModel
 			array('number_of_rows, number_of_columns', 'required'),
 			array('measure_name', 'required'),
 			array('description', 'required'),
+			array('description', 'checkdescriptioncharacters'),
 			array('measure_name', 'checkmeasurename'),
+			array('measure_name', 'checkmeasurenamecharacters'),
 		);
+	}
+	
+	public function checkdescriptioncharacters()
+	{
+		if(preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $this->description))
+		{
+			$this->addError('description', 'Description should not contain special characters');
+		}
+	}
+	
+	public function checkmeasurenamecharacters()
+	{
+		if(preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $this->measure_name))
+		{
+			$this->addError('measure_name', 'Measure name should not contain special characters');
+		}
 	}
 	
 	public function checkmeasurename()

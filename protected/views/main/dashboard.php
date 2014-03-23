@@ -6,6 +6,11 @@
 </style>
 
 <?php Yii::app()->clientScript->registerScriptFile(Yii::app()->request->baseUrl.'/js/dashboard.js',CClientScript::POS_HEAD); ?>
+<?php Yii::app()->clientScript->registerCoreScript('jquery');?>
+
+<div id="main-flash" style="display: none">
+	
+</div>
 
 <div id="page-name">
 	<?php echo strtoupper($area->area_name); ?> DASHBOARD

@@ -11,7 +11,15 @@ Class AddMeasureThirdForm extends CFormModel
 		return array (
 			array('column_name, column_data_type', 'required'),
 			array('column_name', 'checkcolumnname'),
+			array('column_name', 'checkcolumnnamecharacters'),
 		);
+	}
+	public function checkcolumnnamecharacters()
+	{
+		if(preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $this->column_name))
+		{
+			$this->addError('column_name', 'Column name should not contain special characters');
+		}
 	}
 	
 	public function checkcolumnname()

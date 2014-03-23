@@ -10,8 +10,16 @@ Class AddMeasureSecondForm extends CFormModel
 	{
 		return array (
 			array('row_name, row_data_type', 'required'),
-			//array('row_name', 'checkrowname'),
+			array('row_name', 'checkrownamecharacters'),
 		);
+	}
+	
+	public function checkrownamecharacters()
+	{
+		if(preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $this->row_name))
+		{
+			$this->addError('row_name', 'Row name should not contain special characters');
+		}
 	}
 	
 	public function checkrowname()

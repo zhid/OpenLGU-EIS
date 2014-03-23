@@ -377,7 +377,11 @@ function rollUp()
 	}
 	else
 	{
-		alert('Row is already root!');
+		var message = document.getElementById('main-flash');
+		message.innerHTML = "The Row is already root";
+		message.style.display = "block";
+		
+		$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
 	}
 }
 

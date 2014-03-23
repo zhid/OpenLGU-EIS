@@ -517,7 +517,7 @@ img.pin {
 	padding: 5px;
 }
 .drill-down{
-	cursor: pointer;
+	cursor: url(../images/drilldown.png), auto;
 }
 #chart-container td {
 	border: 1px solid #7e7e7e;
