@@ -1,11 +1,7 @@
 //controllers of the dashboard
 var measure_btn;
 var chart_btn;
-//controllers of the dashboard
-
-//for AJAX
 var request;
-//for AJAX
 
 function init()
 {
@@ -354,10 +350,20 @@ function changeDimensions()
 			else if(request.responseText == 'no-row-drilldown')
 			{
 				revertRow();
+				var message = document.getElementById('main-flash');
+				message.innerHTML = "The Row is already at the bottom";
+				message.style.display = "block";
+				
+				$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
 			}
 			else if(request.responseText == 'no-column-drilldown')
 			{
 				revertColumn();
+				var message = document.getElementById('main-flash');
+				message.innerHTML = "The Column is already at the bottom";
+				message.style.display = "block";
+				
+				$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
 			}
 		}
 	}
@@ -369,16 +375,59 @@ function changeDimensions()
 function rollUp()
 {
 	var row_distance_level = parseInt(sessionStorage.getItem('rowDistanceLevel'));
+	var row_parent_name = "";
 	
-	if(row_distance_level != '0')
+	if(sessionStorage.rowParentName)
+	{
+		row_parent_name = sessionStorage.getItem('rowParentName');
+	}
+	
+	if(row_distance_level != 0)
 	{
 		revertRow();
 		showDimensions();
+		if(sessionStorage.rowParentName)
+		{
+			sessionStorage.setItem('rowName', row_parent_name);
+			sessionStorage.removeItem('rowParentName');
+			loadDimensionsData();
+		}
 	}
 	else
 	{
 		var message = document.getElementById('main-flash');
-		message.innerHTML = "The Row is already root";
+		message.innerHTML = "The Row is already at the top";
+		message.style.display = "block";
+		
+		$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
+	}
+}
+
+function columnRollUp()
+{
+	var column_distance_level = parseInt(sessionStorage.getItem('columnDistanceLevel'));
+	var column_parent_name = "";
+	
+	if(sessionStorage.columnParentName)
+	{
+		column_parent_name = sessionStorage.getItem('columnParentName');
+	}
+	
+	if(column_distance_level != 0)
+	{
+		revertColumn();
+		showDimensions();
+		if(sessionStorage.columnParentName)
+		{
+			sessionStorage.setItem('columnName', column_parent_name);
+			sessionStorage.removeItem('columnParentName');
+			loadDimensionsData();
+		}
+	}
+	else
+	{
+		var message = document.getElementById('main-flash');
+		message.innerHTML = "The Column is already at the top";
 		message.style.display = "block";
 		
 		$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
@@ -478,17 +527,31 @@ function queryData()
 	var form = document.forms.namedItem('queryDataForm');
 	var action = form.getAttribute('action');
 	var formData = new FormData();
+	var isColumnExist = true, isRowExist = true;
 	
 	if(sessionStorage.getItem('columnName') === "")
 	{
-		var chart_container = document.getElementById('chart-container');
-		chart_container.innerHTML = '<div id="comment-on-data">Please Select a Column Dimension!</div>';
-		return false;
+		isColumnExist = false;
 	}
 	if(sessionStorage.getItem('rowName') === "")
 	{
-		var chart_container = document.getElementById('chart-container');
+		isRowExist = false;
+	}
+	
+	var chart_container = document.getElementById('chart-container');
+	if(isColumnExist == false && isRowExist == true)
+	{
+		chart_container.innerHTML = '<div id="comment-on-data">Please Select a Column Dimension!</div>';
+		return false;
+	}
+	else if(isColumnExist == true && isRowExist == false)
+	{
 		chart_container.innerHTML = '<div id="comment-on-data">Please Select a Row Dimension!</div>';
+		return false;
+	}
+	else if(isColumnExist == false && isRowExist == false)
+	{
+		chart_container.innerHTML = '<div id="comment-on-data">Please Select a Row and Column Dimension!</div>';
 		return false;
 	}
 	
@@ -618,15 +681,11 @@ function showQueryData()
 
 function rowDrillDown(row)
 {
-	/*alert(row.getAttribute('rowId'));
-	alert(row.getAttribute('rowname'));
-	alert(row.getAttribute('rowdata'));
-	alert(row.getAttribute('isBottom'));
-	alert(row.getAttribute('isTop'));*/
 	if(window.sessionStorage)
 	{
 		var rowParentId = sessionStorage.getItem('rowParentId');
 		var rowParentValue = sessionStorage.getItem('rowParentValue');
+		var rowParentName = row.getAttribute('rowname');
 		
 		rowParentId = rowParentId+';'+row.getAttribute('rowId');
 		if(row.getAttribute('type') == 'text')
@@ -639,6 +698,7 @@ function rowDrillDown(row)
 		}
 		
 		sessionStorage.setItem('rowParentId', rowParentId);
+		sessionStorage.setItem('rowParentName', rowParentName);
 		sessionStorage.setItem('rowParentValue', rowParentValue);
 		sessionStorage.setItem('rowDistanceLevel', parseInt(row.getAttribute('distance'))+1);
 	}
@@ -647,15 +707,11 @@ function rowDrillDown(row)
 
 function columnDrillDown(column)
 {
-	/*alert(column.getAttribute('columnId'));
-	alert(column.getAttribute('columnname'));
-	alert(column.getAttribute('columndata'));
-	alert(column.getAttribute('isBottom'));
-	alert(column.getAttribute('isTop'));*/
 	if(window.sessionStorage)
 	{	
 		var columnParentId = sessionStorage.getItem('columnParentId');
 		var columnParentValue = sessionStorage.getItem('columnParentValue');
+		var columnParentName = column.getAttribute('columnname');
 		
 		columnParentId = columnParentId+';'+column.getAttribute('columnId');
 		if(column.getAttribute('type') == 'text')
@@ -668,6 +724,7 @@ function columnDrillDown(column)
 		}
 		
 		sessionStorage.setItem('columnParentId', columnParentId);
+		sessionStorage.setItem('columnParentName', columnParentName);
 		sessionStorage.setItem('columnParentValue', columnParentValue);
 		sessionStorage.setItem('columnDistanceLevel', parseInt(column.getAttribute('distance'))+1);
 	}
@@ -676,7 +733,6 @@ function columnDrillDown(column)
 
 function chartCollapse(chart)
 {
-	//alert(chart.value);
 	if(window.sessionStorage)
 	{
 		sessionStorage.setItem('chartCollapse', chart.value);
@@ -709,6 +765,67 @@ function getChartCollapse()
 			sessionStorage.setItem('chartCollapse', collapse[i].value);
 			break;
 		}
+	}
+}
+
+function getElementPosition(element) 
+{
+	var x = 0, y = 0;
+	
+	while(element != null) 
+	{
+		x += element.offsetLeft;
+		y += element.offsetTop;
+		element = element.offsetParent;
+	}
+	return {x:x, y:y};
+}
+
+function showContext(event, cell)
+{
+	var position = getElementPosition(cell);
+
+	if(cell.getAttribute('cell') == "row")
+	{
+		var context = document.getElementById('drill-context-row');
+		var rollup = document.getElementById('rowrollupclick');
+		var drilldown = document.getElementById('rowdrilldownclick');
+		
+		document.getElementById('drill-context-column').style.display = "none";
+		context.style.display = "block";
+		context.style.left = (position.x)+"px";
+		context.style.top = (position.y)+"px";
+	
+		rollup.addEventListener("click", function(){rollUp()}, false);
+		drilldown.addEventListener("click", function(){ rowDrillDown(cell) }, false);
+	}
+	else if(cell.getAttribute('cell') == "column")
+	{
+		var context = document.getElementById('drill-context-column');
+		var rollup = document.getElementById('columnrollupclick');
+		var drilldown = document.getElementById('columndrilldownclick');
+		
+		document.getElementById('drill-context-row').style.display = "none";
+		context.style.display = "block";
+		context.style.left = (position.x)+"px";
+		context.style.top = (position.y)+"px";
+	
+		rollup.addEventListener("click", function(){columnRollUp()}, false);
+		drilldown.addEventListener("click", function(){ columnDrillDown(cell) }, false);
+	}
+	
+	return false;
+}
+
+document.onclick = function(event)
+{
+	if(event.target.getAttribute('class') == undefined || (event.target.getAttribute('class') != 'drill-down' && event.target.getAttribute('class') != 'table-data'))
+	{
+		var rowcontext = document.getElementById('drill-context-row');
+		var columncontext = document.getElementById('drill-context-column');
+		
+		rowcontext.style.display = "none";
+		columncontext.style.display = "none";
 	}
 }
 

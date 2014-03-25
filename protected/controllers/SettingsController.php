@@ -585,7 +585,7 @@ Class SettingsController extends CController
 			$area = Area::model()->find($criteria);
 		
 			$criteria = new CDbCriteria();
-			$criteria->select = 'measure_id, measure_name, threshold, alert_level, alert_time';
+			$criteria->select = 'measure_id, measure_name, alert_level';
 			$criteria->condition = 'area_id=:area_id';
 			$criteria->params = array(':area_id'=>$_GET['areaid']);
 			
@@ -700,8 +700,6 @@ Class SettingsController extends CController
 				{
 					$model->measure_id = $_POST['EditMeasure']['measure_id'];
 					$model->measure_name = $_POST['EditMeasure']['measure_name'];
-					$model->threshold = $_POST['EditMeasure']['threshold'];
-					$model->alert_time = $_POST['EditMeasure']['alert_time'];
 					$model->description = $_POST['EditMeasure']['description'];
 				
 					$measure_model = Measure::model();
@@ -717,8 +715,6 @@ Class SettingsController extends CController
 						if($model->validate())
 						{
 							$measure->measure_name = $model->measure_name;
-							$measure->threshold = $model->threshold;
-							$measure->alert_time = $model->alert_time;
 							$measure->description = $model->description;
 							
 							$new_table_name = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
@@ -1474,6 +1470,210 @@ Class SettingsController extends CController
 			{
 				throw new CHttpException(404);
 			}
+		}
+		else
+		{
+			throw new CHttpException(404);
+		}
+	}
+	
+	public function actionListindicators()
+	{
+		if(isset($_GET['areaid']) && isset($_GET['measureid']))
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = 'area_id, area_name';
+			$criteria->condition = 'area_id=:area_id';
+			$criteria->params = array(':area_id'=>$_GET['areaid']);
+			$area = Area::model()->find($criteria);
+			
+			$criteria = new CDbCriteria();
+			$criteria->select = '*';
+			$criteria->condition = 'measure_id=:measure_id AND area_id=:area_id';
+			$criteria->order = 'measure_id ASC';
+			$criteria->params = array(':measure_id'=>$_GET['measureid'], ':area_id'=>$_GET['areaid']);
+			$measure = Measure::model()->find($criteria);
+			
+			if($area != NULL && $measure != NULL)
+			{
+				$criteria = new CDbCriteria();
+				$criteria->select = '*';
+				$criteria->condition = 'area_id=:area_id';
+				$criteria->params = array(':area_id'=>$_GET['areaid']);
+				
+				$count = Indicator::model()->count($criteria);
+				$pages = new CPagination($count);
+				$pages->pageSize = 4;
+				$pages->applyLimit($criteria);
+				$indicators = Indicator::model()->findAll($criteria);
+				$column_name = array();
+				$i = 0;
+				
+				foreach($indicators as $indicator)
+				{
+					$criteria = new CDbCriteria();
+					$criteria->select = 'column_name';
+					$criteria->condition = 'column_id=:column_id';
+					$criteria->params = array(':column_id'=>$indicator->column_id);
+					$column = ColumnDimension::model()->find($criteria);
+					
+					$column_name[$i++] = $column->column_name;
+				}
+			
+				
+				$this->render('listofindicators', array('area'=>$area, 'measure'=>$measure, 'column_name'=>$column_name, 'indicators'=>$indicators, 'pages'=>$pages, 'count'=>$count));
+			}
+			else
+			{
+				throw new CHttpException(404);
+			}
+		}
+		else
+		{
+			throw new CHttpException(404);
+		}
+	}
+	
+	public function actionAddindicator()
+	{
+		if(isset($_GET['areaid']) && isset($_GET['measureid']))
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = 'area_id, area_name';
+			$criteria->condition = 'area_id=:area_id';
+			$criteria->params = array(':area_id'=>$_GET['areaid']);
+			$area = Area::model()->find($criteria);
+			
+			$criteria = new CDbCriteria();
+			$criteria->select = '*';
+			$criteria->condition = 'measure_id=:measure_id AND area_id=:area_id';
+			$criteria->order = 'measure_id ASC';
+			$criteria->params = array(':measure_id'=>$_GET['measureid'], ':area_id'=>$_GET['areaid']);
+			$measure = Measure::model()->find($criteria);
+			
+			if($area != NULL && $measure != NULL)
+			{
+				$model = new AddIndicator();
+				
+				$criteria = new CDbCriteria();
+				$criteria->select = '*';
+				$criteria->condition = 'measure_id=:measure_id';
+				$criteria->params = array(':measure_id'=>$_GET['measureid']);
+				$columns = ColumnDimension::model()->findAll($criteria);
+				
+				$column_id_array = array();
+				foreach($columns as $column)
+				{
+					$column_id_array[$column->column_id] = $column->column_name;
+				}
+			
+				if(isset($_POST['AddIndicator']))
+				{
+					$model->area_id = $_POST['AddIndicator']['area_id'];
+					$model->column_id = $_POST['AddIndicator']['column_id'];
+					$model->threshold = $_POST['AddIndicator']['threshold'];
+					$model->indicator_operator = $_POST['AddIndicator']['indicator_operator'];
+					$model->indicator_type = $_POST['AddIndicator']['indicator_type'];
+					
+					if($model->validate())
+					{
+						$indicator_model = Indicator::model();
+						$transaction = $indicator_model->dbConnection->beginTransaction();
+					
+						$criteria = new CDbCriteria();
+						$criteria->select = '*';
+						$criteria->condition = 'area_id=:area_id AND indicator_operator=:indicator_operator AND indicator_type=:indicator_type';
+						$criteria->params = array(':area_id'=>$model->area_id, ':indicator_operator'=>$model->indicator_operator, ':indicator_type'=>$model->indicator_type);
+						$indicators = $indicator_model->find($criteria);
+						
+						if($indicators != NULL)
+						{
+							try {
+								$indicators->area_id = $model->area_id;
+								$indicators->column_id = $model->column_id;
+								$indicators->threshold = $model->threshold;
+								$indicators->indicator_operator = $model->indicator_operator;
+								$indicators->indicator_type = $model->indicator_type;
+							
+								if($indicators->save())
+								{
+									$transaction->commit();
+									Yii::app()->user->setFlash('addindicator_success', "An indicator has been added!");
+									$this->refresh();
+								}
+								else
+								{
+									$transaction->rollback();
+									Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+								}
+							} catch (Exception $exception) {
+								$transaction->rollback();
+								Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+							}
+						}
+						else
+						{
+							try {
+								$indicator = new Indicator;
+								
+								$indicator->area_id = $model->area_id;
+								$indicator->column_id = $model->column_id;
+								$indicator->threshold = $model->threshold;
+								$indicator->indicator_operator = $model->indicator_operator;
+								$indicator->indicator_type =$model->indicator_type;
+								
+								if($indicator->save())
+								{
+									$transaction->commit();
+									Yii::app()->user->setFlash('addindicator_success', "An indicator has been added!");
+									$this->refresh();
+								}
+								else
+								{
+									$transaction->rollback();
+									Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+								}
+							} catch (Exception $exception) {
+								$transaction->rollback();
+								Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+							}
+						}
+					}
+				}
+				$this->render('addindicator', array('area'=>$area, 'measure'=>$measure, 'model'=>$model, 'column_id_array'=>$column_id_array));
+			}
+			else
+			{
+				throw new CHttpException(404);
+			}
+		}
+		else
+		{
+			throw new CHttpException(404);
+		}
+	}
+	
+	public function actionDeleteindicator()
+	{
+		if(isset($_POST['indicatorid']))
+		{
+			$transaction = Yii::app()->db->beginTransaction();
+		
+			try {
+				$criteria = new CDbCriteria();
+				$criteria->select = '*';
+				$criteria->condition = 'indicator_id=:indicator_id';
+				$criteria->params = array(':indicator_id'=>$_POST['indicatorid']);
+				Indicator::model()->deleteAll($criteria);
+				
+				$transaction->commit();
+				Yii::app()->user->setFlash('deleteindicator_success', "An indicator has been deleted!");
+			} catch(Exception $exception) {
+				$transaction->rollback();
+				Yii::app()->user->setFlash('deleteindicator_failed', "Deleting an indicator failed!");
+			}
+			$url = $this->createUrl('settings/listindicators', array('areaid'=>$_POST['areaid'], 'measureid'=>$_POST['measureid']), '&');
+			$this->redirect($url);
 		}
 		else
 		{

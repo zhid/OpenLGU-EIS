@@ -367,11 +367,12 @@ Class MainController extends CController
 				}
 				else if($row_hierarchy_condition == "" && $column_hierarchy_condition != "")
 				{
-					$drilldown_hierarchy_condition = $column_hierarchy_condition.' AND ';
+					//$drilldown_hierarchy_condition = $column_hierarchy_condition.' AND ';
+					$drilldown_hierarchy_condition = "";
 				}
 				else if($row_hierarchy_condition != "" && $column_hierarchy_condition != "")
 				{
-					$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND '.$column_hierarchy_condition.' AND ';
+					$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND ';
 				}
 				else
 				{
@@ -1192,10 +1193,6 @@ Class MainController extends CController
 	
 	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name)
 	{
-		echo '<div id="dashboard-drilldown">
-			<div id="rollup" class="rollup-panel-button" onclick="rollUp()"></div>
-		</div>';
-	
 		echo '<table>';
 		echo '<tr>';
 		for($i=0; $i<count($rows); $i++)
@@ -1204,7 +1201,10 @@ Class MainController extends CController
 		}
 		for($i=0; $i<count($columns); $i++)
 		{
-			echo '<th>'.$column_name[$i].'</th>';
+			$column_dimension = ColumnDimension::model()->find(array('select'=>'column_id, column_data_type', 'condition'=>'column_name=:column_name', 'params'=>array(':column_name'=>$column_name[$i])));
+			$column_hierarchy = ColumnHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$column_dimension->column_id)));
+		
+			echo '<th class="drill-down" cell="column" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$column_name[$i].'" oncontextmenu="return showContext(event, this)">'.$column_name[$i].'</th>';
 		}
 		echo '</tr>';
 		foreach($table_rows as $table_row)
@@ -1215,14 +1215,11 @@ Class MainController extends CController
 				$row_dimension = RowDimension::model()->find(array('select'=>'row_id, row_data_type', 'condition'=>'row_name=:row_name', 'params'=>array(':row_name'=>$row_name[$i])));
 				$row_hierarchy = RowHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$row_dimension->row_id)));
 				
-				echo '<td class="drill-down" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)">'.$table_row[$rows[$i]].'</td>';
+				echo '<td class="drill-down" cell="row" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" oncontextmenu="return showContext(event, this)">'.$table_row[$rows[$i]].'</td>';
 			}
 			for($i=0; $i<count($columns); $i++)
 			{
-				$column_dimension = ColumnDimension::model()->find(array('select'=>'column_id, column_data_type', 'condition'=>'column_name=:column_name', 'params'=>array(':column_name'=>$column_name[$i])));
-				$column_hierarchy = ColumnHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$column_dimension->column_id)));
-			
-				echo '<td class="drill-down" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$columns[$i].'" columndata="'.$table_row[$columns[$i]].'" onclick="columnDrillDown(this)">'.$table_row[$columns[$i]].'</td>';
+				echo '<td>'.$table_row[$columns[$i]].'</td>';
 			}
 			echo '</tr>';
 		}

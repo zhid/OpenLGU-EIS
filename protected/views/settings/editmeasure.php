@@ -11,6 +11,12 @@
 	#main-menu ul li:nth-of-type(3) a {
 		border-bottom: 5px solid #bfee32;
 	}
+	.description-field, .description-error-msg {
+		height: 150px;
+	}
+	.description-field textarea{
+		height: 150px;
+	}
 </style>
 
 <div id="page-name">
@@ -23,6 +29,7 @@
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
 				array('label'=>'Overview', 'url'=>array('/settings/measureoverview?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
+				array('label'=>'Indicators', 'url'=>array('/settings/listindicators?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Add Dimension', 'url'=>array('/settings/addrowdimension?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Create Hierarchy', 'url'=>array('/settings/createrowhierarchy?areaid='.($area->area_id).'&measureid='.($measure->measure_id)))
 			),
@@ -84,26 +91,6 @@
 					</div>
 					<div class="error-msg">
 						<?php echo CHtml::error($model, 'measure_name'); ?>
-					</div>
-					
-					<div class="label">
-						<?php echo CHtml::activeLabel($model, 'threshold'); ?>
-					</div>
-					<div class="field">
-						<?php echo CHtml::activeNumberField($model, 'threshold', array('min'=>0, 'value'=>$measure->threshold)); ?>
-					</div>
-					<div class="error-msg">
-						<?php echo CHtml::error($model, 'threshold'); ?>
-					</div>
-					
-					<div class="label">
-						<?php echo CHtml::activeLabel($model, 'alert_time'); ?>
-					</div>
-					<div class="field">
-						<?php echo CHtml::activeDropDownList($model, 'alert_time', array('Every week'=>'Every week', 'Every day'=>'Every day', 'Every hour'=>'Every hour'), array('options'=>array(($measure->alert_time)=>array('selected'=>true)))); ?>
-					</div>
-					<div class="error-msg">
-						<?php echo CHtml::error($model, 'alert_time'); ?>
 					</div>
 					
 					<div class="description-label">

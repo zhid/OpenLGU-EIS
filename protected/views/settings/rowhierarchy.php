@@ -1,6 +1,6 @@
 <!--This Page is for the Settings Page-->
 <style type="text/css">
-	#controls ul li:nth-of-type(3) a {
+	#controls ul li:nth-of-type(4) a {
 		text-decoration: none;
 		height: 30px;
 		width: auto;
@@ -23,6 +23,7 @@
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
 				array('label'=>'Overview', 'url'=>array('/settings/measureoverview?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
+				array('label'=>'Indicators', 'url'=>array('/settings/listindicators?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Add Dimension', 'url'=>array('/settings/addrowdimension?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Create Hierarchy', 'url'=>array('/settings/createrowhierarchy?areaid='.($area->area_id).'&measureid='.($measure->measure_id)))
 			),

@@ -44,6 +44,16 @@
 			Loading ...
 		</div>
 		
+		<div id="drill-context-column" style="display:none;">
+			<div class="context-menu" id="columnrollupclick">Roll Up</div>
+			<div class="context-menu" style="border-top: 1px solid #5b5b5b;" id="columndrilldownclick">Drill Down</div>
+		</div>
+		
+		<div id="drill-context-row" style="display:none;">
+			<div class="context-menu" id="rowrollupclick">Roll Up</div>
+			<div class="context-menu" style="border-top: 1px solid #5b5b5b;" id="rowdrilldownclick">Drill Down</div>
+		</div>
+		
 		<div id="dashboard-panel">
 			<?php
 				echo CHtml::beginForm(array('main/querydata'), 'POST', array('name'=>'queryDataForm'));

@@ -136,11 +136,9 @@
 				<div id="measure-search-result">
 					<table id="measure-show-result">
 						<th>Measure Name</th>
-						<th>Threshold</th>
 						<th>Alert Level</th>
-						<th>Alert Time</th>
-						<th></th>
-						<th></th>
+						<th>View Measure</th>
+						<th>Delete Measure</th>
 						
 						<?php
 							$i = 0;
@@ -151,9 +149,7 @@
 									echo '
 									<tr>
 										<td>'.($measure->measure_name).'</td>
-										<td>'.($measure->threshold).'</td>
 										<td>'.($measure->alert_level).'</td>
-										<td>'.($measure->alert_time).'</td>
 										<td>';
 											echo CHtml::beginForm(array('settings/measureoverview/'), 'get');
 												echo CHtml::hiddenField('areaid', $area_id);

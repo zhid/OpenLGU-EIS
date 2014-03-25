@@ -80,7 +80,7 @@
 			<div class="row">
 				<div class="row-field">
 					<?php $type_index = 'row'.$i.'_data_type'; $val = Yii::app()->session[$type_index];?>
-					<?php echo CHtml::activeDropDownList($eachmodel, "[$i]row_data_type", array('bigint'=>'integer', 'double precision'=>'float', 'money'=>'money', 'boolean'=>'boolean', 'text'=>'text'), array('options'=>array($val=>array('selected'=>true)))); ?>
+					<?php echo CHtml::activeDropDownList($eachmodel, "[$i]row_data_type", array('bigint'=>'integer', 'double precision'=>'float', 'text'=>'text'), array('options'=>array($val=>array('selected'=>true)))); ?>
 				</div>
 				<div class="row-error-msg">
 					<?php echo CHtml::error($eachmodel, '[$i]row_data_type'); ?>
@@ -126,7 +126,7 @@
 			<div class="row">
 				<div class="row-field">
 					<?php $type_index = 'column'.$i.'_data_type'; $val = Yii::app()->session[$type_index];?>
-					<?php echo CHtml::activeDropDownList($eachmodel, "[$i]column_data_type", array('bigint'=>'integer', 'double precision'=>'float', 'money'=>'money', 'boolean'=>'boolean', 'text'=>'text'), array('options'=>array($val=>array('selected'=>true)))); ?>
+					<?php echo CHtml::activeDropDownList($eachmodel, "[$i]column_data_type", array('bigint'=>'integer', 'double precision'=>'float', 'text'=>'text'), array('options'=>array($val=>array('selected'=>true)))); ?>
 				</div>
 				<div class="row-error-msg">
 					<?php echo CHtml::error($eachmodel, '[$i]column_data_type'); ?>

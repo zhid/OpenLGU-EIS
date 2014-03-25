@@ -23,6 +23,7 @@
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
 				array('label'=>'Overview', 'url'=>array('/settings/measureoverview?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
+				array('label'=>'Indicators', 'url'=>array('/settings/listindicators?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Add Dimension', 'url'=>array('/settings/addrowdimension?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Create Hierarchy', 'url'=>array('/settings/createrowhierarchy?areaid='.($area->area_id).'&measureid='.($measure->measure_id)))
 			),
@@ -59,20 +60,6 @@
 				</div>
 				<div class="data-value">
 					<?php echo $measure->measure_name; ?>
-				</div>
-				
-				<div class="data-label">
-					Threshold:
-				</div>
-				<div class="data-value">
-					<?php echo $measure->threshold; ?>
-				</div>
-				
-				<div class="data-label">
-					Alert Time:
-				</div>
-				<div class="data-value">
-					<?php echo $measure->alert_time; ?>
 				</div>
 				
 				<div class="data-label">

@@ -272,6 +272,20 @@
 	height: 25px;
 	width: 365px;
 }
+.addindicator-flash-message {
+	position: absolute;
+	left: 600px;
+	top: 250px;
+	background-position: 5px center;
+	background-size: 25px 25px;
+	border-radius: 5px;
+	padding-left: 35px;
+	padding-top: 10px;
+	margin-left: 20px;
+	font-family: Arial;
+	height: 25px;
+	width: 365px;
+}
 /*style for Flash Messages*/
 
 /*style for Add New Area Page*/
@@ -700,6 +714,7 @@
 	float: left;
 	height: 25px;
 	width: 200px;
+	margin-right: 30px;
 }
 .parent-header {
 	font-family: Arial;
@@ -716,6 +731,7 @@
 	margin-top: 10px;
 	float: left;
 	padding-top: 10px;
+	margin-right: 30px;
 	height: 30px;
 	width: 200px;
 }
@@ -743,3 +759,116 @@
 	width: 200px;
 }
 /*style for hierarchy*/
+
+/*style for adding indicator*/
+.indicator-label {
+	float: left;
+	font-family: Arial;
+	font-size: 17px;
+	padding-top: 5px;
+	height: 25px;
+	width: 60px;
+	margin-top: 20px;
+	clear: left;
+}
+.indicator-data select#AddIndicator_column_id{
+	height: 30px;
+	width: 300px;
+}
+.indicator-data {
+	float: left;
+	height: 30px;
+	width: 320px;
+	font-family: Arial;
+	font-size: 17px;
+	margin-top: 20px;
+}
+.indicator-level {
+	padding-top: 5px;
+	padding-left: 5px;
+	border: 1px solid black;
+	float: left;
+	height: 23px;
+	width: 293px;
+	font-family: Arial;
+	font-size: 17px;
+	margin-top: 20px;
+	margin-right: 20px;
+}
+#indicator-threshold input[type="text"]#AddIndicator_threshold {
+	height: 25px;
+	width: 150px;
+}
+#indicator-threshold {
+	float: left;
+	height: 30px;
+	width: 170px;
+	font-family: Arial;
+	font-size: 17px;
+	margin-top: 20px;
+}
+#indicator-operator  select#AddIndicator_indicator_type{
+	height: 30px;
+	width: 370px;
+}
+#indicator-operator  select#AddIndicator_indicator_operator{
+	height: 30px;
+	width: 200px;
+}
+#indicator-threshold-error {
+	float: left;
+	height: 30px;
+	width: 200px;
+	margin-top: 20px;
+	color: red;
+	font-family: Arial;
+	font-size: 13px;
+	font-weight: bold;
+}
+#indicator-operator {
+	float: left;
+	height: 30px;
+	width: 220px;
+	font-family: Arial;
+	font-size: 17px;
+	margin-top: 20px;
+}
+.indicator-submit {
+	clear: left;
+	margin-top: 10px;
+}
+#list-indicators{
+	padding-top: 10px;
+	height: 300px;
+	width: auto;
+	font-family: Arial;
+	font-size: 15px;
+}
+#list-indicators table {
+	border: 1px solid #7e7e7e;
+	background-color: #f5f5f5;
+	border-collapse: collapse;
+	width: 950px;
+}
+#list-indicators th{
+	border: 1px solid #7e7e7e;
+	padding: 5px;
+}
+#list-indicators th:nth-of-type(1) {
+	width: 400px;
+}
+#list-indicators th:nth-of-type(2) {
+	width: 100px;
+}
+#list-indicators td {
+	border: 1px solid #7e7e7e;
+	background-color: white;
+	padding: 10px;
+}
+#list-indicators td:nth-of-type(2) {
+	text-align: center;
+}
+#list-indicators tr td input[type="submit"]{
+	width: 80px;
+}
+/*style for adding indicator*/
