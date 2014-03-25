@@ -11,6 +11,7 @@
  *
  * The followings are the available model relations:
  * @property Measure $measure
+ * @property Threshold[] $thresholds
  */
 class ColumnDimension extends CActiveRecord
 {
@@ -48,6 +49,7 @@ class ColumnDimension extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'measure' => array(self::BELONGS_TO, 'Measure', 'measure_id'),
+			'thresholds' => array(self::HAS_MANY, 'Threshold', 'column_id'),
 		);
 	}
 

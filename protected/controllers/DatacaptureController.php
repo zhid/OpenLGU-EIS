@@ -167,20 +167,22 @@ Class DatacaptureController extends CController
 				
 				if($valid)
 				{
-					for($i=0; $i<count($_POST['DataCapture']); $i++)
+					for($j=0; $j<count($_POST['DataCapture']); $j++)
 					{
-						if($model[$i]->data_type == 'text')
+						if($model[$j]->data_type == 'text')
 						{
-							$data[$per_data++] = "'".$model[$i]->field."'";
+							$data[$per_data] = "'".$model[$j]->field."'";
 						}
 						else
 						{
-							$data[$per_data++] = $model[$i]->field;
+							$data[$per_data] = $model[$j]->field;
 						}
+						$per_data++;
 					
-						if($i % ((count($rows)+count($columns))-1) == 0 && $i != 0)
+						if($per_data == (count($rows)+count($columns)))
 						{
-							$insert_data[$per_insert++] = '('.implode(",", $data).')';
+							$insert_data[$per_insert] = '('.implode(",", $data).')';
+							$per_insert++;
 							$per_data = 0;
 						}
 					}
@@ -196,12 +198,14 @@ Class DatacaptureController extends CController
 					try {
 						$sql_insert = "INSERT INTO $measure_name $insert_dim VALUES $insert_into";
 						$result = Yii::app()->db->createCommand($sql_insert)->execute();
+						
 						Yii::app()->user->setFlash('datacapture_success', "Data has been Added!");
 						
 						$url = $this->createUrl('datacapture/capture', array('page'=>1), '&');
 						$this->redirect($url);
 					} catch(Exception $exception) {
 						Yii::app()->user->setFlash('datacapture_failed', "Adding data failed!");
+						//echo $exception;
 					}
 				}
 			}

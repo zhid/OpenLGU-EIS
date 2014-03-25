@@ -32,8 +32,8 @@
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
 				array('label'=>'Main', 'url'=>array('/main/servicearea')),
-				array('label'=>'Data Capture', 'url'=>array('/datacapture/capture?page=1')),
-				array('label'=>'Settings', 'url'=>array('/settings/listofareas')),
+				array('label'=>'Data Capture', 'url'=>array('/datacapture/capture?page=1'), 'visible'=>Yii::app()->user->name == 'admin'),
+				array('label'=>'Settings', 'url'=>array('/settings/listofareas'), 'visible'=>Yii::app()->user->name == 'admin'),
 				array('label'=>'Logout('.Yii::app()->user->name.')', 'url'=>array('/main/logout'), 'visible'=>!Yii::app()->user->isGuest)
 			),
 		)); ?>

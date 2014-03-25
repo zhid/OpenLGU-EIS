@@ -38,6 +38,11 @@ return array(
 			//returns the user to the home url or the login page
 			'loginUrl'=>array(''),
 			'allowAutoLogin'=>true,
+			'class' => 'WebUser',
+		),
+		'HTML2PDF' => array(
+			'librarySourcePath' => 'application.vendors.html2pdf.*',
+			'classFile'         => 'html2pdf.class.php', 
 		),
 		// uncomment the following to enable URLs in path-format
 		

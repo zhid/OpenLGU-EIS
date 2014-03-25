@@ -29,7 +29,11 @@ Class SettingsController extends CController
 			),
 			array ('allow',
 				'actions'=>array('listofareas', 'search', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure'),
-				'users'=>array('@'),
+				'roles'=>array('admin'),
+			),
+			array ('deny',
+				'actions'=>array('listofareas', 'search', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure'),
+				'roles'=>array('LCE', 'dataencoder'),
 			),
 		);
 	}
@@ -166,7 +170,7 @@ Class SettingsController extends CController
 		if(isset($_GET['areaid']) && !(isset($_POST['EditArea'])))
 		{
 			$criteria = new CDbCriteria();
-			$criteria->select = 'area_id, area_name, managing_office, officer_in_charge, visible, service_area';
+			$criteria->select = 'area_id, area_name, managing_office, officer_in_charge, visible, service_area, area_logo';
 			$criteria->condition = 'area_id=:area_id';
 			$criteria->params = array(':area_id'=>$_GET['areaid']);
 			
@@ -360,6 +364,7 @@ Class SettingsController extends CController
 									$url = $this->createUrl('settings/addnewmeasure', array('areaid'=>$_GET['areaid'], 'page'=>$page), '&');
 									$this->redirect($url);
 								}
+								//$this->createmeasure($_GET['areaid']);
 							}
 						}
 						$this->render('addnewmeasure', array('area'=>$area, 'area_id'=>$_GET['areaid'], 'page'=>$_GET['page'], 'model'=>$model));
@@ -566,6 +571,7 @@ Class SettingsController extends CController
 		}
 		catch(Exception $exception) {
 			$transaction->rollback();
+			//echo $exception;
 			return FALSE;
 		}
 	}
@@ -1098,6 +1104,11 @@ Class SettingsController extends CController
 						$criteria = new CDbCriteria();
 						$criteria->addInCondition('category_id', $column_id_array);
 						ColumnHierarchy::model()->deleteAll($criteria);
+						
+						//delete thresholds
+						$criteria = new CDbCriteria();
+						$criteria->addInCondition('column_id', $column_id_array);
+						Threshold::model()->deleteAll($criteria);
 					}
 					
 					//find all column dimension id of measure to be deleted
@@ -1144,7 +1155,7 @@ Class SettingsController extends CController
 					Yii::app()->user->setFlash('deletemeasure_success', "Measure has been deleted!");
 				} catch(Exception $exception) {
 					$transaction->rollback();
-					Yii::app()->user->setFlash('deletemeasure_failed', "Deleting a measure failed!");
+					Yii::app()->user->setFlash('deletemeasure_failed', $exception);
 				}
 				$url = $this->createUrl('settings/listofmeasures', array('areaid'=>$_POST['areaid']), '&');
 				$this->redirect($url);

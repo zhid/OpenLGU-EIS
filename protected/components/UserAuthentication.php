@@ -2,7 +2,7 @@
 
 class UserAuthentication extends CUserIdentity
 {
-	private $_id;
+	private $id;
 	
 	public function authenticate()
 	{
@@ -18,8 +18,9 @@ class UserAuthentication extends CUserIdentity
 		}
 		else
 		{
-			$this->_id = $record->username;
+			$this->id = $record->username;
 			$this->setState('username', $record->username);
+			$this->setState('roles', $record->role);
 			$this->errorCode = self::ERROR_NONE;
 		}
 		
@@ -28,6 +29,6 @@ class UserAuthentication extends CUserIdentity
 	
 	public function getId()
 	{
-		return $this->_id;
+		return $this->id;
 	}
 }

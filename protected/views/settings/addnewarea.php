@@ -54,7 +54,7 @@
 				<?php echo CHtml::activeLabel($model, 'service_area'); ?>
 			</div>	
 			<div class="field">
-				<?php echo CHtml::activeDropDownList($model, 'service_area', array('1'=>'Administrative Governance', '2'=>'Social Governance', '3'=>'Economic Governance', '4'=>'Good Governance')); ?>
+				<?php echo CHtml::activeDropDownList($model, 'service_area', array('1'=>'Administrative Governance', '2'=>'Social Governance', '3'=>'Economic Governance', '4'=>'Good Governance', '5'=>'Environmental Governance')); ?>
 			</div>
 			<div class="error-msg">
 				<!--Returns an error message if the areaname field is black-->

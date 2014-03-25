@@ -45,7 +45,15 @@ function clearSessionStorage()
 					echo '<tr>';
 				}
 			?>
-				<td width="150"><a href="<?php echo Yii::app()->getHomeUrl().'/main/dashboard?servicearea='.$servicearea.'&areaid='.($area->area_id) ?> "><center><i class="<?php echo $area->area_logo; ?>"></i></center><center><?php echo $area->area_name ?></center></a></td>
+			<?php
+				if($area->color_rating == 1){ $color = '#1a9954';}
+				else if($area->color_rating == 2){ $color = '#7df144';}
+				else if($area->color_rating == 3){ $color = '#fafc05';}
+				else if($area->color_rating == 4){ $color = '#ffc105';}
+				else if($area->color_rating == 5){ $color = '#f50704';}
+				else { $color = '#0066cc';}
+			?>
+				<td width="150" onclick="clearSessionStorage()"><a href="<?php echo Yii::app()->getHomeUrl().'/main/dashboard?servicearea='.$servicearea.'&areaid='.($area->area_id) ?> "><center><i class="<?php echo $area->area_logo; ?>" style="color:<?php echo $color;?>"></i></center><center><?php echo $area->area_name ?></center></a></td>
 				<?php $i++; ?>
 			<?php 
 				if($i % 6 == 0 && $i != 0)

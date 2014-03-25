@@ -1,7 +1,27 @@
 <!--This Page is for the Dashboard Page-->
 <style type="text/css">
-	#main-menu ul li:nth-of-type(1) a {
+	#main-menu ul li:nth-of-type(1) a 
+	{
 		border-bottom: 5px solid #bfee32;
+	}
+	
+	#alert-report
+	{
+		padding-left: 15px;
+		padding-top: 5px;
+		font-size: 13px;
+		width: 185px;
+		height: 25px;
+		font-family: Arial;
+		font-weight: bold;
+		text-decoration: none;
+		color: #0066cc;
+		cursor: pointer;
+	}
+	
+	#alert-report a
+	{
+		text-decoration: none;
 	}
 </style>
 
@@ -40,11 +60,15 @@
 </div>
 
 <div id="dashboard-side">
+	<div id="alert-report">
+		<a href="<?php echo Yii::app()->getHomeUrl().'/main/myalerts?servicearea='.$servicearea.'&areaid='.$area->area_id?>">My Alerts</a>
+	</div>
+	
 	<div id="chart-collapse">
 		<form id="chartCollapsable" name="chartCollapsable">
 			<select name="collapseType" onchange="chartCollapse(this)">
 				<option selected="selected">Collapse</option>
-				<option>No Collapse</option>
+				<option>Do Not Collapse</option>
 			</select>
 		</form>
 	</div>
@@ -80,6 +104,11 @@
 		echo CHtml::endForm();
 	?>
 	
+	<?php
+		echo CHtml::beginForm(array('main/summaryreport'), 'POST', array('name'=>'summaryReportForm'));
+		echo CHtml::endForm();
+	?>
+	
 	<div id="dashboard-charts">
 		<input id="view_mode" type="hidden" value="" />
 		<div id="table" type="table" class="charts" ischartselected="true"></div>
@@ -88,26 +117,16 @@
 		<div id="pie" type="pie" class="charts" ischartselected="false"></div>
 		<div id="area" type="area" class="charts" ischartselected="false"></div>
 	</div>
-	
-	<div id="drill-context-column" style="display:none;">
-		<div class="context-menu" id="columnrollupclick">Roll Up</div>
-		<div class="context-menu" style="border-top: 1px solid #5b5b5b;" id="columndrilldownclick">Drill Down</div>
-	</div>
-	
-	<div id="drill-context-row" style="display:none;">
-		<div class="context-menu" id="rowrollupclick">Roll Up</div>
-		<div class="context-menu" style="border-top: 1px solid #5b5b5b;" id="rowdrilldownclick">Drill Down</div>
-	</div>
-	
-	<div class="dashboard-filter">
-		<div id="row-filter-title">Rows:</div>
-		<div id="row-filter-buttons"></div>
-	</div>
-	
-	<div class="dashboard-filter">
-		<div id="column-filter-title">Columns:</div>
-		<div id="column-filter-buttons"></div>
-	</div>
+</div>
+
+<div class="dashboard-filter">
+	<div id="row-filter-title">Rows:</div>
+	<div id="row-filter-buttons"></div>
+</div>
+
+<div class="dashboard-filter">
+	<div id="column-filter-title">Columns:</div>
+	<div id="column-filter-buttons"></div>
 </div>
 
 <div id="chart-container"></div>

@@ -6,6 +6,7 @@
  * The followings are the available columns in table 'user_identification':
  * @property string $username
  * @property string $password
+ * @property string $role
  */
 class UserIdentification extends CActiveRecord
 {
@@ -28,9 +29,10 @@ class UserIdentification extends CActiveRecord
 			array('username, password', 'required'),
 			array('username', 'length', 'max'=>50),
 			array('password', 'length', 'max'=>10),
+			array('role', 'length', 'max'=>30),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('username, password', 'safe', 'on'=>'search'),
+			array('username, password, role', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -53,6 +55,7 @@ class UserIdentification extends CActiveRecord
 		return array(
 			'username' => 'Username',
 			'password' => 'Password',
+			'role' => 'Role',
 		);
 	}
 
@@ -76,6 +79,7 @@ class UserIdentification extends CActiveRecord
 
 		$criteria->compare('username',$this->username,true);
 		$criteria->compare('password',$this->password,true);
+		$criteria->compare('role',$this->role,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

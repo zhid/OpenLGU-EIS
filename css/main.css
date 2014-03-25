@@ -400,7 +400,7 @@ div.search-form
 #dashboard-view 
 {
 	float: left;
-	height: 160px;
+	height: 60px;
 	width: 750px;
 }
 
@@ -475,14 +475,14 @@ div.search-form
 	border-radius: 5px;
 	border: 2px solid #eaeaea; 
 	margin: 4px;
-	height: 40px;
+	min-height: 40px;
+	height: auto;
 	width: 735px;
 }
 
 #row-filter-title, #column-filter-title
 {
 	float: left;
-	background-color: #f7f7f7;
 	padding-top: 5px;
 	padding-left: 5px;
 	text-align: left;
@@ -495,19 +495,17 @@ div.search-form
 #row-filter-buttons, #column-filter-buttons
 {
 	float: left;
-	height: 40px;
+	min-height: 30px;
+	height: auto;
 	width: 660px;
-	overflow-y: scroll;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 #row-filter-buttons button, #column-filter-buttons button
  {
 	cursor: pointer;
 	background-color: #ebebed;
-	background-image: url('../images/filter_btn.png');
-	background-repeat: no-repeat;
-	background-size: 12px 12px;
-	background-position: right center;
 	border-radius: 5px;
 	border: 2px solid #c4c4c8;
 	padding-left: 15px;
@@ -515,7 +513,7 @@ div.search-form
 	margin-top: 2px;
 	margin-left: 5px;
 	height: 25px;
-	min-width: 100px;
+	min-width: 80px;
 	width: auto;
 	font-family: Arial;
 	font-size: 13px;
@@ -533,7 +531,7 @@ div.search-form
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-color: white;
-	border: 1px dashed black;
+	border: 1px solid white;
 	background-size: 35px 35px;
 	margin-top: 10px;
 	margin-bottom: 10px;
@@ -587,8 +585,8 @@ div.search-form
 {
 	position: absolute;
 	z-index: 111;
-	left: 220px;
-	top: 310px;
+	left: 470px;
+	top: 300px;
 	border: 2px solid #c4c4c8;
 	background-color: white;
 	min-height: 150px;
@@ -689,6 +687,7 @@ div.search-form
 	text-align: center;
 	border: 1px solid #7e7e7e;
 	padding: 5px;
+	height: 25px;
 }
 
 .drill-down
@@ -701,42 +700,66 @@ div.search-form
 	border: 1px solid #7e7e7e;
 	background-color: white;
 	text-align: center;
+	height: 25px;
 	padding: 5px;
 }
 
-.context-menu
- {
-	cursor: default;
-	font-family: Arial;
-	font-size: 13px;
-	padding-top: 3px;
-	padding-left: 5px;
-	height: 21px;
-	width: 94px
-}
-#columnrollupclick, #rowrollupclick 
+#drill-operation
 {
-	background-image: url(../images/rollup.png);
-	background-size: 20px 20px;
-	background-repeat: no-repeat;
-	background-position: 74px center;
+	float: right;
+	height: 25px;
+	width: 20px;
 }
 
-#columndrilldownclick, #rowdrilldownclick 
+#roll-up
 {
-	background-image: url(../images/drilldown.png);
-	background-size: 20px 20px;
+	background-image: url('../images/roll-up.png');
+	background-position: center center;
+	background-size: 15px 10px;
 	background-repeat: no-repeat;
-	background-position: 74px center;
+	cursor: pointer;
+	margin-bottom: 2px;
+	float: right;
+	height: 10px;
+	width: 20px;
 }
 
-#drill-context-row,  #drill-context-column
+#not-roll-up
 {
-	border: 1px solid #5b5b5b;
-	background-color: #ebebed;
-	position: absolute;
-	height: 48px;
-	width: 98px
+	background-image: url('../images/no-roll-up.png');
+	background-position: center center;
+	background-size: 15px 10px;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	margin-bottom: 2px;
+	float: right;
+	float: right;
+	height: 10px;
+	width: 20px;
+}
+
+#drill-down
+{
+	background-image: url('../images/drill-down.png');
+	background-position: center center;
+	background-size: 15px 10px;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	float: right;
+	height: 10px;
+	width: 20px;
+}
+
+#not-drill-down
+{
+	background-image: url('../images/no-drill-down.png');
+	background-position: center center;
+	background-size: 15px 10px;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	float: right;
+	height: 10px;
+	width: 20px;
 }
 /*style for the dashboard*/
 

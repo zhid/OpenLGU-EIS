@@ -20,7 +20,7 @@ Class MainController extends CController
 				'users'=>array('?'),
 			),
 			array ('deny',
-				'actions'=>array('index', 'panel', 'logout', 'main', 'dashboard', 'getdimension'),
+				'actions'=>array('index', 'panel', 'logout', 'main', 'dashboard', 'getdimension', 'servicearea'),
 				'users'=>array('?'),
 			),
 			array ('allow',
@@ -32,21 +32,106 @@ Class MainController extends CController
 	
 	public function actionServicearea()
 	{
-		$this->render('servicearea');
+		$colors = array();
+		$colors[0] = '#0066cc';
+		
+		for($i=1; $i<=5; $i++)
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = '*';
+			$criteria->condition = 'service_area=:service_area';
+			$criteria->params = array(':service_area'=>$i);
+			$areas = Area::model()->findAll($criteria);
+			$max = 0;
+			
+			if($areas != NULL)
+			{
+				foreach($areas as $area)
+				{
+					if($max < $area->color_rating)
+					{
+						$max = $area->color_rating;
+					}
+				}
+				
+				if($max == 1){ $colors[$i] = '#1a9954';}
+				else if($max == 2){ $colors[$i] = '#7df144';}
+				else if($max == 3){ $colors[$i] = '#fafc05';}
+				else if($max == 4){ $colors[$i] = '#ffc105';}
+				else if($max == 5){ $colors[$i] = '#f50704';}
+				else { $colors[$i] = '#0066cc';};
+			}
+			else
+			{
+				$colors[$i] = '#0066cc';
+			}	
+		}
+	
+		$this->render('servicearea', array('colors'=>$colors));
 	}
 
 	public function actionPanel()
 	{
 		if(isset($_GET['servicearea']))
 		{
-			if($_GET['servicearea'] >= 1 && $_GET['servicearea'] <= 4)
+			if($_GET['servicearea'] >= 1 && $_GET['servicearea'] <= 5)
 			{
+				$total_count = 0;
+			
 				$criteria = new CDbCriteria();
 				$criteria->select = 'area_id, area_name, color_rating, area_logo';
 				$criteria->condition = 'service_area=:service_area AND visible=:visible';
 				$criteria->params = array(':service_area'=>$_GET['servicearea'], ':visible'=>true);
 				$areas = Area::model()->findAll($criteria);
 				$count = Area::model()->count($criteria);
+				
+				foreach($areas as $area)
+				{
+					$criteria = new CDbCriteria();
+					$criteria->select = '*';
+					$criteria->condition = 'area_id=:area_id';
+					$criteria->params = array(':area_id'=>$area->area_id);
+					$measures = Measure::model()->findAll($criteria);
+				
+					foreach($measures as $measure)
+					{
+						$criteria = new CDbCriteria();
+						$criteria->select = '*';
+						$criteria->condition = 'measure_id=:measure_id';
+						$criteria->params = array(':measure_id'=>$measure->measure_id);
+						$alert_count = Alert::model()->count($criteria);
+	
+						$total_count = $total_count + $alert_count;
+					}
+					
+					if($total_count >=1 && $total_count <=5)
+					{
+						$area->color_rating = 1;
+					}
+					else if($total_count >=6 && $total_count <=10)
+					{
+						$area->color_rating = 2;
+					}
+					else if($total_count >=11 && $total_count <=15)
+					{
+						$area->color_rating = 3;
+					}
+					else if($total_count >=16 && $total_count <=20)
+					{
+						$area->color_rating = 4;
+					}
+					else if($total_count >=21)
+					{
+						$area->color_rating = 5;
+					}
+					try {
+						$area->save();
+					}
+					catch(Exception $exception) {
+						//do nothing
+					}
+					$total_count = 0;
+				}
 				
 				if($count != 0)
 				{
@@ -330,7 +415,7 @@ Class MainController extends CController
 			if(isset($_POST['isAjax']))
 			{
 				$criteria = new CDbCriteria();
-				$criteria->select = 'measure_name';
+				$criteria->select = 'measure_name, measure_id';
 				$criteria->condition = 'measure_id=:measure_id';
 				$criteria->params = array(':measure_id'=>$_POST['measureId']);
 				$measure = Measure::model()->find($criteria);
@@ -466,7 +551,7 @@ Class MainController extends CController
 							switch($_POST['viewMode'])
 							{
 								case 'table':
-									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
+									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id);
 									break;
 								case 'bar':
 									$this->renderBarView($table_rows, $columns, $column_name, $rows, $row_name);
@@ -485,11 +570,11 @@ Class MainController extends CController
 									break;
 							}
 							break;
-						case 'No Collapse':
+						case 'Do Not Collapse':
 							switch($_POST['viewMode'])
 							{
 								case 'table':
-									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name);
+									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id);
 									break;
 								case 'bar':
 									$this->renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name);
@@ -603,14 +688,7 @@ Class MainController extends CController
 			
 			$chart = new Chart();
 		
-			if(count($columns) == 1)
-			{
-				$plot = new PHPlot(740, 400);
-			}
-			else if(count($columns) >= 2)
-			{
-				$plot = new PHPlot(370, 400);
-			}
+			$plot = new PHPlot(740, 400);
 			
 			$plot->SetPrintImage(false);
 			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
@@ -840,7 +918,7 @@ Class MainController extends CController
 		$plot->SetPlotType('pie');
 		$plot->SetShading(0);
 		$plot->SetDrawPieBorders(True);
-		$plot->SetPieBorderColor('white');
+		$plot->SetPieBorderColor('black');
 		//list($width, $height) = $plot->GetLegendSize();
 		$plot->SetPieAutoSize(true);
 		//$plot->SetMarginsPixels($width, NULL, NULL, NULL);
@@ -877,14 +955,7 @@ Class MainController extends CController
 			}
 			
 			//create and configure the PHPlot object.
-			if(count($columns) == 1)
-			{
-				$plot = new PHPlot(740, 400);
-			}
-			else if(count($columns) >= 2)
-			{
-				$plot = new PHPlot(370, 400);
-			}
+			$plot = new PHPlot(740, 400);
 			
 			$plot->SetPrintImage(False);
 			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
@@ -899,7 +970,7 @@ Class MainController extends CController
 			$plot->SetPlotType('pie');
 			$plot->SetShading(0);
 			$plot->SetDrawPieBorders(True);
-			$plot->SetPieBorderColor('white');
+			$plot->SetPieBorderColor('black');
 			list($width, $height) = $plot->GetLegendSize();
 			$plot->SetPieAutoSize(true);
 			$plot->SetMarginsPixels($width, NULL, NULL, NULL);
@@ -957,6 +1028,7 @@ Class MainController extends CController
 		$plot->SetFont('title', 'ARIALBD.TTF', 10);
 		$plot->SetFont('y_label', 'ARIAL.TTF', 8);
 		$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+		$plot->SetLineWidths(2);
 		$plot->SetImageBorderType('none');
 		$plot->SetPlotType('linepoints');
 		$plot->SetDataType('text-data');
@@ -999,14 +1071,7 @@ Class MainController extends CController
 			$chart_data[$chart_data_count] = array('', $line_number, );
 		
 			//create and configure the PHPlot object.
-			if(count($columns) == 1)
-			{
-				$plot = new PHPlot(740, 400);
-			}
-			else if(count($columns) >= 2)
-			{
-				$plot = new PHPlot(370, 400);
-			}
+			$plot = new PHPlot(740, 400);
 			
 			//set up the rest of the plot:
 			$plot->SetPrintImage(False);
@@ -1015,6 +1080,7 @@ Class MainController extends CController
 			$plot->SetFont('title', 'ARIALBD.TTF', 10);
 			$plot->SetFont('y_label', 'ARIAL.TTF', 8);
 			$plot->SetFont('x_label', 'ARIAL.TTF', 8);
+			$plot->SetLineWidths(2);
 			$plot->SetImageBorderType('none');
 			$plot->SetPlotType('linepoints');
 			$plot->SetDataType('data-data');
@@ -1142,14 +1208,8 @@ Class MainController extends CController
 		
 			//create and configure the PHPlot object.
 			
-			if(count($columns) == 1)
-			{
-				$plot = new PHPlot(740, 400);
-			}
-			else if(count($columns) >= 2)
-			{
-				$plot = new PHPlot(370, 400);
-			}
+			$plot = new PHPlot(740, 400);
+			
 			
 			//Disable error images, since this script produces HTML:
 			$plot->SetFailureImage(False);
@@ -1183,8 +1243,9 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id)
 	{
+		//echo $measure_id;
 		echo '<table>';
 		echo '<tr>';
 		for($i=0; $i<count($rows); $i++)
@@ -1193,10 +1254,33 @@ Class MainController extends CController
 		}
 		for($i=0; $i<count($columns); $i++)
 		{
-			$column_dimension = ColumnDimension::model()->find(array('select'=>'column_id, column_data_type', 'condition'=>'column_name=:column_name', 'params'=>array(':column_name'=>$column_name[$i])));
+			$criteria = new CDbCriteria();
+			$criteria->select = 'column_id, column_data_type';
+			$criteria->condition = 'column_name=:column_name AND measure_id=:measure_id';
+			$criteria->params = array(':column_name'=>$column_name[$i], ':measure_id'=>$measure_id);
+			$column_dimension = ColumnDimension::model()->find($criteria);
+			
 			$column_hierarchy = ColumnHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$column_dimension->column_id)));
-		
-			echo '<th class="drill-down" cell="column" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$column_name[$i].'" oncontextmenu="return showContext(event, this)">'.$column_name[$i].'</th>';
+			
+			$operation = '';
+			if($column_hierarchy->top_flag == 1 && $column_hierarchy->bottom_flag == 1)
+			{
+				$operation = '<div id="drill-operation"><div id="not-roll-up"></div><div id="not-drill-down"></div></div>';
+			}
+			else if($column_hierarchy->top_flag == 0 && $column_hierarchy->bottom_flag == 0)
+			{
+				$operation = '<div id="drill-operation"><div id="roll-up" onclick="columnRollUp()"></div><div id="drill-down" cell="column" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$column_name[$i].'" onclick="columnDrillDown(this)"></div></div>';
+			}
+			else if($column_hierarchy->top_flag == 0 && $column_hierarchy->bottom_flag == 1)
+			{
+				$operation = '<div id="drill-operation"><div id="roll-up" onclick="columnRollUp()"></div><div id="not-drill-down"></div></div>';
+			}
+			else if($column_hierarchy->top_flag == 1 && $column_hierarchy->bottom_flag == 0)
+			{
+				$operation = '<div id="drill-operation"><div id="not-roll-up"></div><div id="drill-down" cell="column" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$column_name[$i].'" onclick="columnDrillDown(this)"></div></div>';
+			}
+			
+			echo '<th class="drill-down">'.$column_name[$i].$operation.'</th>';
 		}
 		echo '</tr>';
 		foreach($table_rows as $table_row)
@@ -1204,10 +1288,33 @@ Class MainController extends CController
 			echo '<tr>';
 			for($i=0; $i<count($rows); $i++)
 			{
-				$row_dimension = RowDimension::model()->find(array('select'=>'row_id, row_data_type', 'condition'=>'row_name=:row_name', 'params'=>array(':row_name'=>$row_name[$i])));
+				$criteria = new CDbCriteria();
+				$criteria->select = 'row_id, row_data_type';
+				$criteria->condition = 'row_name=:row_name AND measure_id=:measure_id';
+				$criteria->params = array(':row_name'=>$row_name[$i], ':measure_id'=>$measure_id);
+				$row_dimension = RowDimension::model()->find($criteria);
+				
 				$row_hierarchy = RowHierarchy::model()->find(array('select'=>'category_id, top_flag, bottom_flag, distance_level', 'condition'=>'category_id=:category_id', 'params'=>array(':category_id'=>$row_dimension->row_id)));
 				
-				echo '<td class="drill-down" cell="row" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" oncontextmenu="return showContext(event, this)">'.$table_row[$rows[$i]].'</td>';
+				$operation = '';
+				if($row_hierarchy->top_flag == 1 && $row_hierarchy->bottom_flag == 1)
+				{
+					$operation = '<div id="drill-operation"><div id="not-roll-up"></div><div id="not-drill-down"></div></div>';
+				}
+				else if($row_hierarchy->top_flag == 0 && $row_hierarchy->bottom_flag == 0)
+				{
+					$operation = '<div id="drill-operation"><div id="roll-up" onclick="rollUp()"></div><div id="drill-down" cell="row" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)"></div></div>';
+				}
+				else if($row_hierarchy->top_flag == 0 && $row_hierarchy->bottom_flag == 1)
+				{
+					$operation = '<div id="drill-operation"><div id="roll-up" onclick="rollUp()"></div><div id="not-drill-down"></div></div>';
+				}
+				else if($row_hierarchy->top_flag == 1 && $row_hierarchy->bottom_flag == 0)
+				{
+					$operation = '<div id="drill-operation"><div id="not-roll-up"></div><div id="drill-down" cell="row" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)"></div></div>';
+				}
+				
+				echo '<td class="drill-down">'.$table_row[$rows[$i]].$operation.'</td>';
 			}
 			for($i=0; $i<count($columns); $i++)
 			{
@@ -1216,5 +1323,34 @@ Class MainController extends CController
 			echo '</tr>';
 		}
 		echo '</table>';
+	}
+	
+	function actionMyalerts()
+	{
+		if(isset($_GET['servicearea']) && isset($_GET['areaid']))
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = 'column_id';
+			$criteria->condition = 'column_id=:column_id';
+			$criteria->params = array(':column_id'=>$_GET['areaid']);
+			$columns = ColumnDimension::model()->findAll($criteria);
+			$column_id_array = array();
+			$i = 0;
+			
+			foreach($columns as $column)
+			{
+				$column_id_array[$i++] = $column->column_id;
+			}
+			
+			$criteria = new CDbCriteria();
+			$criteria->addInCondition('column_id', $column_id_array);
+			$alerts = Alert::model()->findAll($criteria);
+			
+			$this->render('myalerts', array('servicearea'=>$_GET['servicearea'], 'areaid'=>$_GET['areaid'], 'alerts'=>$alerts));
+		}
+		else
+		{
+			throw new CHttpException(404);
+		}
 	}
 }

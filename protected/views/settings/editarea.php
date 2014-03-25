@@ -48,17 +48,17 @@
 				<div class="field">
 					<?php echo CHtml::activeDropDownList($model, 'area_logo', array('fa fa-home fa-5x'=>'Home', 'fa fa-money fa-5x'=>'Money', 'fa fa-building-o fa-5x'=>'Building', 'fa fa-bar-chart-o fa-5x'=>'Bar Chart', 'fa fa-pencil-square-o fa-5x'=>'Pencil',
 					'fa fa-road fa-5x'=>'Road', 'fa fa-shopping-cart fa-5x'=>'Cart', 'fa fa-medkit fa-5x'=>'Med Kit', 'fa fa-leaf fa-5x'=>'Leaf', 'fa fa-wheelchair fa-5x'=>'Wheel Chair', 'fa fa-users fa-5x'=>'User', 'fa fa-phone fa-5x'=>'Phone',
-					'fa fa-legal fa-5x'=>'Legal', 'fa fa-cogs fa-5x'=>'Cogs', 'fa fa-tasks fa-5x'=>'Task', 'fa fa-book fa-5x'=>'Book', 'fa fa-thumbs-up fa-5x'=>'Thumbs Up', 'fa fa-flag fa-5x'=>'Flag', 'fa fa-archive fa-5x'=>'Archive'), array('onchange'=>'showlogo(this)')); ?>
+					'fa fa-legal fa-5x'=>'Legal', 'fa fa-cogs fa-5x'=>'Cogs', 'fa fa-tasks fa-5x'=>'Task', 'fa fa-book fa-5x'=>'Book', 'fa fa-thumbs-up fa-5x'=>'Thumbs Up', 'fa fa-flag fa-5x'=>'Flag', 'fa fa-archive fa-5x'=>'Archive'), array('onchange'=>'showlogo(this)', 'options'=>array(''.($area->area_logo).''=>array('selected'=>true)))); ?>
 				</div>
 				<div class="error-msg">
-					<i id="area-logo" class="fa fa-home fa-5x" style="color: gray;"></i>
+					<i id="area-logo" class="<?php echo $area->area_logo ?>" style="color: gray;"></i>
 				</div>
 				
 				<div class="label">
 				<?php echo CHtml::activeLabel($model, 'service_area'); ?>
 				</div>	
 				<div class="field">
-					<?php echo CHtml::activeDropDownList($model, 'service_area', array('1'=>'Administrative Governance', '2'=>'Social Governance', '3'=>'Economic Governance', '4'=>'Good Governance'), array('options'=>array(''.($area->service_area).''=>array('selected'=>true)))); ?>
+					<?php echo CHtml::activeDropDownList($model, 'service_area', array('1'=>'Administrative Governance', '2'=>'Social Governance', '3'=>'Economic Governance', '4'=>'Good Governance', '5'=>'Environmental Governance'), array('options'=>array(''.($area->service_area).''=>array('selected'=>true)))); ?>
 				</div>
 				<div class="error-msg">
 					<!--Returns an error message if the areaname field is black-->

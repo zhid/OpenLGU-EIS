@@ -20,7 +20,7 @@ function init()
 		else
 		{
 			chart_btn[i].setAttribute('ischartselected', 'false');
-			chart_btn[i].style.border = '1px dashed black';
+			chart_btn[i].style.border = '1px solid white';
 			chart_btn[i].style.backgroundColor = 'white';
 		}
 	}
@@ -105,7 +105,7 @@ function loadViewModeData()
 				else
 				{
 					chart_btn[i].setAttribute('ischartselected', 'false');
-					chart_btn[i].style.border = '1px dashed black';
+					chart_btn[i].style.border = '1px solid white';
 					chart_btn[i].style.backgroundColor = 'white';
 				}
 			}
@@ -479,7 +479,7 @@ function setViewMode(viewmode)
 	for(var i=0; i<chart_btn.length; i++)
 	{
 		chart_btn[i].setAttribute('ischartselected', 'false');
-		chart_btn[i].style.border = '1px dashed black';
+		chart_btn[i].style.border = '1px solid white';
 		chart_btn[i].style.backgroundColor = 'white';
 	}
 	viewmode.setAttribute('ischartselected', 'true');
@@ -691,14 +691,6 @@ function rowDrillDown(row)
 			
 			showDimensions();
 		}
-		else
-		{
-			var message = document.getElementById('main-flash');
-			message.innerHTML = "Row already at the bottom level";
-			message.style.display = "block";
-			
-			$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
-		}
 	}
 }
 
@@ -731,14 +723,6 @@ function columnDrillDown(column)
 			sessionStorage.setItem('columnDistanceLevel', parseInt(column.getAttribute('distance'))+1);
 			
 			showDimensions();
-		}
-		else
-		{
-			var message = document.getElementById('main-flash');
-			message.innerHTML = "Column already at the bottom level";
-			message.style.display = "block";
-			
-			$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
 		}
 	}
 	
@@ -778,67 +762,6 @@ function getChartCollapse()
 			sessionStorage.setItem('chartCollapse', collapse[i].value);
 			break;
 		}
-	}
-}
-
-function getElementPosition(element) 
-{
-	var x = 0, y = 0;
-	
-	while(element != null) 
-	{
-		x += element.offsetLeft;
-		y += element.offsetTop;
-		element = element.offsetParent;
-	}
-	return {x:x, y:y};
-}
-
-function showContext(event, cell)
-{
-	var position = getElementPosition(cell);
-
-	if(cell.getAttribute('cell') == "row")
-	{
-		var context = document.getElementById('drill-context-row');
-		var rollup = document.getElementById('rowrollupclick');
-		var drilldown = document.getElementById('rowdrilldownclick');
-		
-		document.getElementById('drill-context-column').style.display = "none";
-		context.style.display = "block";
-		context.style.left = (position.x + 10)+"px";
-		context.style.top = (position.y + 10)+"px";
-	
-		rollup.addEventListener("click", function(){rollUp()}, false);
-		drilldown.addEventListener("click", function(){ rowDrillDown(cell) }, false);
-	}
-	else if(cell.getAttribute('cell') == "column")
-	{
-		var context = document.getElementById('drill-context-column');
-		var rollup = document.getElementById('columnrollupclick');
-		var drilldown = document.getElementById('columndrilldownclick');
-		
-		document.getElementById('drill-context-row').style.display = "none";
-		context.style.display = "block";
-		context.style.left = (position.x + 10)+"px";
-		context.style.top = (position.y + 10)+"px";
-	
-		rollup.addEventListener("click", function(){columnRollUp()}, false);
-		drilldown.addEventListener("click", function(){ columnDrillDown(cell) }, false);
-	}
-	
-	return false;
-}
-
-document.onclick = function(event)
-{
-	if(event.target.getAttribute('class') == undefined || (event.target.getAttribute('class') != 'drill-down' && event.target.getAttribute('class') != 'table-data'))
-	{
-		var rowcontext = document.getElementById('drill-context-row');
-		var columncontext = document.getElementById('drill-context-column');
-		
-		rowcontext.style.display = "none";
-		columncontext.style.display = "none";
 	}
 }
 
