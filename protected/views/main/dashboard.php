@@ -60,10 +60,6 @@
 </div>
 
 <div id="dashboard-side">
-	<div id="alert-report">
-		<a href="<?php echo Yii::app()->getHomeUrl().'/main/myalerts?servicearea='.$servicearea.'&areaid='.$area->area_id?>">My Alerts</a>
-	</div>
-	
 	<div id="chart-collapse">
 		<form id="chartCollapsable" name="chartCollapsable">
 			<select name="collapseType" onchange="chartCollapse(this)">

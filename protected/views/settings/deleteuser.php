@@ -21,7 +21,7 @@
 		var deleteNo = document.getElementById("deleteNo");
 		var nameContainer = document.getElementById("measure-del");
 		
-		nameContainer.innerHTML = areaForm.getAttribute('areaname');
+		nameContainer.innerHTML = areaForm.getAttribute('username');
 		deleteYes.addEventListener("click", function(){deleteYesClick(areaForm)}, false);
 		deleteNo.addEventListener("click", deleteNoClick, false);
 		deletePrompt.style.display = "block";
@@ -37,14 +37,14 @@
 	   CClientScript::POS_READY
 	);
 ?>
-<?php if(Yii::app()->user->hasFlash('deletearea_success')):?>
+<?php if(Yii::app()->user->hasFlash('deleteuser_success')):?>
 	<div class="flash-success" id="flash-msg">
-		<?php echo Yii::app()->user->getFlash('deletearea_success'); ?>
+		<?php echo Yii::app()->user->getFlash('deleteuser_success'); ?>
 	</div>
 <?php endif; ?>
-<?php if(Yii::app()->user->hasFlash('deletearea_failed')):?>
+<?php if(Yii::app()->user->hasFlash('deleteuser_failed')):?>
 	<div class="flash-error" id="flash-msg">
-		<?php echo Yii::app()->user->getFlash('deletearea_failed'); ?>
+		<?php echo Yii::app()->user->getFlash('deleteuser_failed'); ?>
 	</div>
 <?php endif; ?>
 
@@ -59,23 +59,14 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
-					'Settings'=>array('settings/adduser'),
-					'List of Areas',
+					'Settings',
 				),
 				'homeLink'=>false,
 			));
 		?>
 	</div>
 	
-	<div id="lists-container">
-		<div id="search-form">
-			<?php echo CHtml::beginForm(array('settings/searcharea/'), 'get'); ?>
-				<?php echo CHtml::textField('keyword', $keyword, array('placeholder'=>'area name')); ?>
-			
-				<?php echo CHtml::submitButton('search', array('name'=>'')); ?>
-			<?php echo CHtml::endForm(); ?>
-		</div>
-		
+	<div id="lists-container">	
 		<?php if($count > 4):?>
 		<div id="pagination">
 			<?php 
@@ -93,33 +84,23 @@
 		
 		<div id="search-result">
 			<table id="show-result">
-				<th>Area Name</th>
-				<th>Managing Office</th>
-				<th>Officer In Charge</th>
-				<th></th>
+				<th>Username</th>
+				<th>Managing Area</th>
 				<th></th>
 				
 				<?php
+					$i = 0;
 					if($count > 0)
 					{
-						foreach($areas as $area)
+						foreach($users as $user)
 						{
 							echo '
 							<tr>
-								<td>'.($area->area_name).'</td>
-								<td>'.($area->managing_office).'</td>
-								<td>'.($area->officer_in_charge).'</td>
-								<td>';
-									echo CHtml::beginForm(array('settings/areaoverview/'), 'get');
-										echo CHtml::hiddenField('areaid', $area->area_id);
-								
-										echo CHtml::submitButton('view', array('name'=>''));
-									echo CHtml::endForm();
-								
-							echo '</td>';
+								<td>'.($user->username).'</td>
+								<td>'.$area_array[$i++].'</td>';
 							echo '<td>';
-									echo CHtml::beginForm(array('settings/deletearea/'), 'post', array('areaname'=>$area->area_name, 'id'=>'deleteAreaForm', 'onsubmit'=>'return showDeletePrompt("'.($area->area_name).'", this)'));
-										echo CHtml::hiddenField('areaid', $area->area_id);
+									echo CHtml::beginForm(array('settings/deleteuser/'), 'post', array('username'=>$user->username, 'id'=>'deleteAreaForm', 'onsubmit'=>'return showDeletePrompt("'.($user->username).'", this)'));
+										echo CHtml::hiddenField('username', $user->username);
 								
 										echo CHtml::submitButton('delete', array('name'=>''));
 									echo CHtml::endForm();
@@ -131,7 +112,7 @@
 					{
 						echo '
 							<tr id="no-areas">
-								<td colspan="5">NO AREAS FOUND!</td>
+								<td colspan="5">NO USERS FOUND!</td>
 							</tr>';
 					}
 				?>
@@ -145,8 +126,9 @@
 	<div class="portlet-content">
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
-				array('label'=>'List of Areas', 'url'=>array('/settings/listofareas')),
-				array('label'=>'Add New Area', 'url'=>array('/settings/addnewarea/'))
+				array('label'=>'Add Users', 'url'=>array('/settings/adduser')),
+				array('label'=>'Delete Users', 'url'=>array('/settings/deleteuser')),
+				array('label'=>'Areas', 'url'=>array('/settings/listofareas'))
 			),
 		)); ?>
 	</div>

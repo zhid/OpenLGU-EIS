@@ -31,10 +31,10 @@
 	<div id="mainmenu">
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
-				array('label'=>'Main', 'url'=>array('/main/servicearea')),
-				array('label'=>'Data Capture', 'url'=>array('/datacapture/capture?page=1'), 'visible'=>Yii::app()->user->name == 'admin'),
-				array('label'=>'Settings', 'url'=>array('/settings/listofareas'), 'visible'=>Yii::app()->user->name == 'admin'),
-				array('label'=>'Logout('.Yii::app()->user->name.')', 'url'=>array('/main/logout'), 'visible'=>!Yii::app()->user->isGuest)
+				array('label'=>'Main', 'url'=>array('/main/servicearea'), 'visible'=>(Yii::app()->user->roles == 'LCE' || Yii::app()->user->roles == 'admin')),
+				array('label'=>'Data Capture', 'url'=>array('/datacapture/capture?page=1'), 'visible'=>(Yii::app()->user->roles == 'admin' || Yii::app()->user->roles == 'dataencoder')),
+				array('label'=>'Settings', 'url'=>array('/settings/adduser'), 'visible'=>Yii::app()->user->roles == 'admin'),
+				array('label'=>'Logout('.Yii::app()->user->username.')', 'url'=>array('/main/logout'), 'visible'=>Yii::app()->user->isGuest == false)
 			),
 		)); ?>
 	</div><!-- mainmenu -->

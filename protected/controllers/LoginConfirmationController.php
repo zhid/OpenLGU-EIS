@@ -24,9 +24,10 @@ Class LoginConfirmationController extends CController
 	{
 		$model = new LoginConfirmation();
 		
-		if(!Yii::app()->user->isGuest)
+		if(Yii::app()->user->isGuest == false)
 		{
-			$this->redirect('index.php/main');
+			$url = $this->createUrl('/main');
+			$this->redirect($url);
 		}
 		
 		if(isset($_POST['LoginConfirmation']))
@@ -40,7 +41,16 @@ Class LoginConfirmationController extends CController
 				
 				if($this->loginError == "NONE")
 				{
-					$this->redirect('index.php/main');
+					if(Yii::app()->user->roles == 'admin' || Yii::app()->user->roles == 'LCE')
+					{
+						$url = $this->createUrl('/main');
+						$this->redirect($url);
+					}
+					else
+					{
+						$url = $this->createUrl('/datacapture/capture?page=1');
+						$this->redirect($url);
+					}
 				}
 			}
 		}

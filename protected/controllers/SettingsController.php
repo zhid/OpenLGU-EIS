@@ -2,7 +2,7 @@
 
 Class SettingsController extends CController
 {
-	public $defaultAction = 'listofareas';
+	public $defaultAction = 'adduser';
 	public $breadcrumbs;
 	
 	public function filters()
@@ -15,7 +15,7 @@ Class SettingsController extends CController
 	public function accessRules()
 	{
 		return array (
-			array ('deny',
+			/*array ('deny',
 				'actions'=>array('listofareas', 'addnewarea'),
 				'users'=>array('?'),
 			),
@@ -26,7 +26,7 @@ Class SettingsController extends CController
 			array('deny',
 				'actions'=>array('removeformsession', 'createmeasure'),
 				'users'=>array('*'),
-			),
+			),*/
 			array ('allow',
 				'actions'=>array('listofareas', 'search', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure'),
 				'roles'=>array('admin'),
@@ -1883,5 +1883,96 @@ Class SettingsController extends CController
 		{
 			throw new CHttpException(404);
 		}
+	}
+	
+	function actionEditUser()
+	{
+	
+	}
+	
+	function actionDeleteUser()
+	{
+		if(isset($_POST['username']))
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = '*';
+			$criteria->condition = 'username=:username';
+			$criteria->params = array(':username'=>$_POST['username']);
+			$user = UserIdentification::model()->find($criteria);
+			$user->delete();
+			
+			Yii::app()->user->setFlash('deleteuser_success', "User has been deleted!");
+		}
+		$criteria = new CDbCriteria();
+		$criteria->select = '*';
+		$criteria->condition = 'role=:role';
+		$criteria->params = array(':role'=>'dataencoder');
+		
+		$count = UserIdentification::model()->count($criteria);
+		$pages = new CPagination($count);
+		$pages->pageSize = 4;
+		$pages->applyLimit($criteria);
+		$users = UserIdentification::model()->findAll($criteria);
+		$area_array = array();
+		$area_count = 0;
+		
+		foreach($users as $user)
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = '*';
+			$criteria->condition = 'area_id=:area_id';
+			$criteria->params = array(':area_id'=>$user->area_id);
+			$area = Area::model()->find($criteria);
+			
+			$area_array[$area_count++] = $area->area_name;
+		}
+	
+		$this->render('deleteuser', array('area_array'=>$area_array, 'users'=>$users, 'pages'=>$pages, 'count'=>$count));
+	}
+	
+	function actionAdduser()
+	{
+		$model = new AddUser();
+		
+		$criteria = new CDbCriteria();
+		$criteria->select = 'area_id, area_name';
+		$areas = Area::model()->findAll($criteria);
+		$area_array = array();
+		
+		foreach($areas as $area)
+		{
+			$area_array[$area->area_id] = $area->area_name;
+		}
+		
+		if(isset($_POST['AddUser']))
+		{
+			$model->username = $_POST['AddUser']['username'];
+			$model->password = $_POST['AddUser']['password'];
+			$model->retype_password = $_POST['AddUser']['retype_password'];
+			$model->area_id = $_POST['AddUser']['area_id'];
+			$model->role = $_POST['AddUser']['role'];
+			
+			if($model->validate())
+			{
+				$user = new UserIdentification;
+				$user->username = $model->username;
+				$user->password = $model->password;
+				$user->role = 'dataencoder';
+				$user->area_id = $model->area_id;
+				$user->role = $model->role;
+				
+				if($user->save())
+				{
+					Yii::app()->user->setFlash('adduser_success', "New User has been added!");
+					$this->refresh();
+				}
+				else
+				{
+					Yii::app()->user->setFlash('adduser_failed', "Adding new user failed!");
+				}
+			}
+		}
+		
+		$this->render('adduser', array('model'=>$model, 'area_array'=>$area_array));
 	}
 }

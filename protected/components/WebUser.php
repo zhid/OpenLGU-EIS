@@ -9,6 +9,18 @@ class WebUser extends CWebUser
      * @param mixed $params (opt) Parameters for this operation, usually the object to access.
      * @return bool Permission granted?
      */
+	public function __get($name)
+	{
+		if($this->hasState($name))
+		{
+			return $this->getState($name);
+		}
+		else
+		{
+			return "guest";
+		}
+	} 
+	
     public function checkAccess($operation, $params=array())
     {
         if (empty($this->id)) 
@@ -21,7 +33,7 @@ class WebUser extends CWebUser
 		{
             return true;
         }
-        
+       
         return ($operation === $role);
     }
 }

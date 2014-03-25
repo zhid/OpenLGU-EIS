@@ -13,6 +13,20 @@
 		height: 20px;
 	}
 	<?php endif; ?>
+	
+	<?php if(Yii::app()->user->roles == 'admin'): ?>
+	#mainmenu ul li:nth-of-type(2) a
+	{
+		background-color: #eff4fa;
+		color: #8e99cd;
+	}
+	<?php elseif(Yii::app()->user->roles == 'dataencoder'): ?>
+	#mainmenu ul li:nth-of-type(1) a
+	{
+		background-color: #eff4fa;
+		color: #8e99cd;
+	}
+	<?php endif; ?>
 </style>
 
 <?php

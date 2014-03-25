@@ -44,6 +44,11 @@ Class DatacaptureController extends CController
 			$page = $_GET['page'];
 			$criteria = new CDbCriteria();
 			$criteria->select = 'area_id, area_name';
+			if(Yii::app()->user->roles == 'dataencoder')
+			{
+				$criteria->condition = 'area_id=:area_id';
+				$criteria->params = array(':area_id'=>Yii::app()->user->area_id);
+			}
 			$areas = Area::model()->findAll($criteria);
 			$rows = NULL;
 			$columns = NULL;

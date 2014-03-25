@@ -1,36 +1,81 @@
+<script>
+	function markalert(alerts)
+	{
+		alert(alerts.getAttribute('alertid'));
+	}
+	
+	function markalert(alerts)
+	{
+		var form = document.forms.namedItem('markAlertForm');
+		var action = form.getAttribute('action');
+		var formData = new FormData(form);
+		
+		formData.append('isAjax', 1);
+		formData.append('alertid', alerts.getAttribute('alertid'));
+				
+		if(window.XMLHttpRequest)
+		{
+			request = new XMLHttpRequest();
+		}
+		else if(window.ActiveXObject)
+		{
+			try {
+				request = new ActiveXObject("Msxml2.XMLHTTP");
+			}
+			catch(exception) {
+				try {
+					request = new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				catch(exception) {
+				}
+			}
+		}
+		
+		if(!request)
+		{
+			alert('Sorry! The Browser cannot create an XMLHttp instance!');
+			return false;
+		}
+		
+		request.open("POST", action, true);
+		request.onreadystatechange = processMarkAlert;
+		request.send(formData);
+	}
+
+	function processMarkAlert()
+	{
+		try {
+			if(request.readyState === 4 && request.status === 200)
+			{
+				//alert(request.responseText);
+				location.reload();
+			}
+		}
+		catch(exception) {
+			alert(exception);
+		}
+	}
+</script>
+
 <style>
 	table#alert-tbl
 	{
 		margin-left: 10px;
+		font-size: 12px;
 	}
 	img#status
 	{
-		height: 30px;
-		width: 30px;
+		height: 25px;
+		width: 25px;
 	}
 </style>
-
-<?php
-	Yii::app()->clientScript->registerScript(
-	   'myHideEffect',
-	   '$("#flash-msg").animate({opacity: 1.0}, 3000).fadeOut("slow");',
-	   CClientScript::POS_READY
-	);
-?>
-
-<?php if(Yii::app()->user->hasFlash('main-flash')):?>
-	<div class="flash-error" id="flash-msg">
-		<?php echo Yii::app()->user->getFlash('main-flash'); ?>
-	</div>
-<?php endif;?>
 
 <div id="overview-name">
 	<?php
 		$this->widget('zii.widgets.CBreadcrumbs', array(
 			'links'=>array(
 				'Main'=>array('main/servicearea'),
-				'Areas of Concern'=>array('/main/panel?servicearea='.$servicearea),
-				'Dashboard'=>array('/main/dashboard?servicearea='.$servicearea.'&areaid='.$areaid),
+				'Alerts',
 			),
 			'homeLink'=>false,
 		));
@@ -40,9 +85,10 @@
 <div id="service-area-container">
 	<table id="alert-tbl" style="margin-right: auto;">
 		<tr>
-			<th>Date</th>
+			<th style="width:70px;">Time/Date</th>
 			<th>Description</th>
-			<th>Status</th>
+			<th style="width:50px;">Alert Code</th>
+			<th style="text-align:center">Mark as Resolved</th>
 		</tr>
 		
 		<?php
@@ -82,6 +128,11 @@
 					
 					
 					echo '<td>'.$status.'</td>';
+					echo '<td style="text-align:center">';
+						echo CHtml::beginForm(array('main/markalert/'), 'post', array('name'=>'markAlertForm'));
+							echo CHtml::checkBox('', false, array('onchange'=>'markalert(this)', 'alertid'=>$alert->alert_id));
+						echo CHtml::endForm();
+					echo '</td>';
 					echo '</tr>';
 				}
 			}

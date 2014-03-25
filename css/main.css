@@ -779,3 +779,59 @@ div.search-form
 	height: 25px;
 	width: 930px;
 }
+
+#legend
+{
+	height: 70px;
+	width: 950px;
+	font-size: 11px;
+	color: gray;
+}
+
+img#color-rating
+{
+	margin-left: 50px;
+	height: 65px;
+	width: 850px;
+}
+
+.tickercontainer 
+{
+	width: 950px;
+	height: 27px;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	color: gray;
+}
+
+#webticker li a
+{
+	height: 18px;
+	color: gray;
+}
+
+.tickercontainer .mask 
+{ 
+	position: relative;
+	top: 8px;
+	height: 18px;
+	overflow: hidden;
+}
+
+ul.newsticker
+ {
+	position: relative;
+	font: bold 10px Verdana;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+ul.newsticker li
+ {
+	float: left;
+	margin: 0;
+	padding-right: 15px;
+	padding-top: 0;
+}

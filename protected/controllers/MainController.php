@@ -66,8 +66,13 @@ Class MainController extends CController
 				$colors[$i] = '#0066cc';
 			}	
 		}
+		$criteria = new CDbCriteria();
+		$criteria->select = '*';
+		$criteria->condition = 'read=:read';
+		$criteria->params = array(':read'=>FALSE);
+		$alerts = Alert::model()->findAll($criteria);
 	
-		$this->render('servicearea', array('colors'=>$colors));
+		$this->render('servicearea', array('colors'=>$colors, 'alerts'=>$alerts));
 	}
 
 	public function actionPanel()
@@ -103,27 +108,27 @@ Class MainController extends CController
 	
 						$total_count = $total_count + $alert_count;
 					}
-					
-					if($total_count >=1 && $total_count <=5)
+					if($total_count == 0)
 					{
 						$area->color_rating = 1;
 					}
-					else if($total_count >=6 && $total_count <=10)
+					else if($total_count >=1 && $total_count <=5)
 					{
 						$area->color_rating = 2;
 					}
-					else if($total_count >=11 && $total_count <=15)
+					else if($total_count >=6 && $total_count <=10)
 					{
 						$area->color_rating = 3;
 					}
-					else if($total_count >=16 && $total_count <=20)
+					else if($total_count >=11 && $total_count <=15)
 					{
 						$area->color_rating = 4;
 					}
-					else if($total_count >=21)
+					else if($total_count >=16)
 					{
 						$area->color_rating = 5;
 					}
+					
 					try {
 						$area->save();
 					}
@@ -135,7 +140,13 @@ Class MainController extends CController
 				
 				if($count != 0)
 				{
-					$this->render('main', array('areas'=>$areas, 'servicearea'=>$_GET['servicearea']));
+					$criteria = new CDbCriteria();
+					$criteria->select = '*';
+					$criteria->condition = 'read=:read';
+					$criteria->params = array(':read'=>FALSE);
+					$alerts = Alert::model()->findAll($criteria);
+				
+					$this->render('main', array('alerts'=>$alerts, 'areas'=>$areas, 'servicearea'=>$_GET['servicearea']));
 				}
 				else
 				{
@@ -1325,32 +1336,35 @@ Class MainController extends CController
 		echo '</table>';
 	}
 	
-	function actionMyalerts()
+	function actionMarkalert()
 	{
-		if(isset($_GET['servicearea']) && isset($_GET['areaid']))
+		if(isset($_POST['isAjax']) && isset($_POST['alertid']))
 		{
 			$criteria = new CDbCriteria();
-			$criteria->select = 'column_id';
-			$criteria->condition = 'column_id=:column_id';
-			$criteria->params = array(':column_id'=>$_GET['areaid']);
-			$columns = ColumnDimension::model()->findAll($criteria);
-			$column_id_array = array();
-			$i = 0;
+			$criteria->select = '*';
+			$criteria->condition = 'alert_id=:alert_id';
+			$criteria->params = array(':alert_id'=>$_POST['alertid']);
+			$alert = Alert::model()->find($criteria);
 			
-			foreach($columns as $column)
-			{
-				$column_id_array[$i++] = $column->column_id;
-			}
-			
-			$criteria = new CDbCriteria();
-			$criteria->addInCondition('column_id', $column_id_array);
-			$alerts = Alert::model()->findAll($criteria);
-			
-			$this->render('myalerts', array('servicearea'=>$_GET['servicearea'], 'areaid'=>$_GET['areaid'], 'alerts'=>$alerts));
+			$alert->read = TRUE;
+			$alert->save();
 		}
 		else
 		{
 			throw new CHttpException(404);
 		}
 	}
+	
+	function actionMyalerts()
+	{
+		$criteria = new CDbCriteria();
+		$criteria->select = '*';
+		$criteria->condition = 'read=:read';
+		$criteria->params = array(':read'=>FALSE);
+		$alerts = Alert::model()->findAll($criteria);
+		
+		$this->render('myalerts', array('alerts'=>$alerts));
+	}
+	
+	
 }
