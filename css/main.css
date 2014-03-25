@@ -537,6 +537,18 @@ img.pin {
 	height: 21px;
 	width: 94px
 }
+#columnrollupclick, #rowrollupclick {
+	background-image: url(../images/rollup.png);
+	background-size: 20px 20px;
+	background-repeat: no-repeat;
+	background-position: 74px center;
+}
+#columndrilldownclick, #rowdrilldownclick {
+	background-image: url(../images/drilldown.png);
+	background-size: 20px 20px;
+	background-repeat: no-repeat;
+	background-position: 74px center;
+}
 #drill-context-row,  #drill-context-column{
 	border: 1px solid #5b5b5b;
 	background-color: #ebebed;

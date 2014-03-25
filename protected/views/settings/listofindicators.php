@@ -53,7 +53,7 @@
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
 				array('label'=>'Overview', 'url'=>array('/settings/measureoverview?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
-				array('label'=>'Indicators', 'url'=>array('/settings/listindicators?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
+				array('label'=>'Thresholds', 'url'=>array('/settings/listthresholds?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Add Dimension', 'url'=>array('/settings/addrowdimension?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				array('label'=>'Create Hierarchy', 'url'=>array('/settings/createrowhierarchy?areaid='.($area->area_id).'&measureid='.($measure->measure_id)))
 			),
@@ -68,7 +68,7 @@
 						'SETTINGS'=>array('settings/listofareas'),
 						''.strtoupper($area->area_name).''=>array('settings/areaoverview?areaid='.$area->area_id),
 						''.strtoupper($measure->measure_name).''=>array('/settings/measureoverview?areaid='.($area->area_id).'&measureid='.($measure->measure_id)),
-						'LIST OF INDICATORS',
+						'LIST OF THRESHOLDS',
 					),
 					'homeLink'=>false,
 				));
@@ -93,22 +93,22 @@
 			<div id="overview-data-menu">
 				<?php $this->widget('zii.widgets.CMenu',array(
 				'items'=>array(
-					array('label'=>'List of Indicators'),
-					array('label'=>'Add Indicator', 'url'=>array('/settings/addindicator?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
+					array('label'=>'List of Threholds'),
+					array('label'=>'Add Threshold', 'url'=>array('/settings/addthresholds?areaid='.($area->area_id).'&measureid='.($measure->measure_id))),
 				),
 			)); ?>
 			
 			</div>
 			
-			<?php if(Yii::app()->user->hasFlash('deleteindicator_success')):?>
+			<?php if(Yii::app()->user->hasFlash('deletethreshold_success')):?>
 				<div class="addindicator-flash-message" id="success-flash">
-					<?php echo Yii::app()->user->getFlash('deleteindicator_success'); ?>
+					<?php echo Yii::app()->user->getFlash('deletethreshold_success'); ?>
 				</div>
 			<?php endif;?>
 			
-			<?php if(Yii::app()->user->hasFlash('deleteindicator_failed')):?>
+			<?php if(Yii::app()->user->hasFlash('deletethreshold_failed')):?>
 				<div class="addindicator-flash-message" id="failed-flash">
-					<?php echo Yii::app()->user->getFlash('deleteindicator_failed'); ?>
+					<?php echo Yii::app()->user->getFlash('deletethreshold_failed'); ?>
 				</div>
 			<?php endif;?>
 			
@@ -130,20 +130,27 @@
 				
 				<div id="list-indicators">
 					<table id="show-result">
-					<th>Indicator</th>
+					<th>Threshold</th>
 					<th></th>
 					
 					<?php
 						if($count > 0)
 						{
 							$i = 0;
-							foreach($indicators as $indicator)
+							foreach($thresholds as $threshold)
 							{
 								echo '<tr>';
-								echo '<td>'.'If '.$column_name[$i++].' '.($indicator->indicator_operator).' '.($indicator->threshold).'</td>';
+								if($threshold->highthreshold != NULL)
+								{
+									echo '<td>'.'If '.$column_name[$i++].' '.($threshold->lowthreshold_operator).' '.($threshold->lowthreshold).' AND '.($threshold->highthreshold_operator).' '.($threshold->highthreshold).' display a '.($threshold->threshold_type).'</td>';
+								}
+								else
+								{	
+									echo '<td>'.'If '.$column_name[$i++].' '.($threshold->lowthreshold_operator).' '.($threshold->lowthreshold).' display a '.($threshold->threshold_type).'</td>';
+								}
 								echo '<td>';
-										echo CHtml::beginForm(array('settings/deleteindicator/'), 'post', array('indicatorid'=>$indicator->indicator_id, 'id'=>'deleteIndicatorForm', 'onsubmit'=>'return showDeletePrompt(this)'));
-											echo CHtml::hiddenField('indicatorid', $indicator->indicator_id);
+										echo CHtml::beginForm(array('settings/deletethreshold/'), 'post', array('thresholdid'=>$threshold->threshold_id, 'id'=>'deleteIndicatorForm', 'onsubmit'=>'return showDeletePrompt(this)'));
+											echo CHtml::hiddenField('thresholdid', $threshold->threshold_id);
 											echo CHtml::hiddenField('areaid', $area->area_id);
 											echo CHtml::hiddenField('measureid', $measure->measure_id);
 											
@@ -157,7 +164,7 @@
 						{
 							echo '
 								<tr id="no-areas">
-									<td colspan="2">NO INDICATORS FOUND!</td>
+									<td colspan="2">NO THRESHOLD FOUND!</td>
 								</tr>';
 						}
 					?>

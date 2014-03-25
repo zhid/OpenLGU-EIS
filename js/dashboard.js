@@ -347,24 +347,6 @@ function changeDimensions()
 				loadDimensionsData();
 				showFilterButtons();
 			}
-			else if(request.responseText == 'no-row-drilldown')
-			{
-				revertRow();
-				var message = document.getElementById('main-flash');
-				message.innerHTML = "The Row is already at the bottom";
-				message.style.display = "block";
-				
-				$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
-			}
-			else if(request.responseText == 'no-column-drilldown')
-			{
-				revertColumn();
-				var message = document.getElementById('main-flash');
-				message.innerHTML = "The Column is already at the bottom";
-				message.style.display = "block";
-				
-				$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
-			}
 		}
 	}
 	catch(exception) {
@@ -396,7 +378,7 @@ function rollUp()
 	else
 	{
 		var message = document.getElementById('main-flash');
-		message.innerHTML = "The Row is already at the top";
+		message.innerHTML = "Row already at the top level";
 		message.style.display = "block";
 		
 		$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
@@ -427,7 +409,7 @@ function columnRollUp()
 	else
 	{
 		var message = document.getElementById('main-flash');
-		message.innerHTML = "The Column is already at the top";
+		message.innerHTML = "Column already at the top level";
 		message.style.display = "block";
 		
 		$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
@@ -686,23 +668,38 @@ function rowDrillDown(row)
 		var rowParentId = sessionStorage.getItem('rowParentId');
 		var rowParentValue = sessionStorage.getItem('rowParentValue');
 		var rowParentName = row.getAttribute('rowname');
+		var rowIsTop = row.getAttribute('isTop');
+		var rowIsBottom = row.getAttribute('isBottom');
+		var rowDistance = row.getAttribute('distance');
 		
-		rowParentId = rowParentId+';'+row.getAttribute('rowId');
-		if(row.getAttribute('type') == 'text')
+		if(rowIsBottom != 1)
 		{
-			rowParentValue = rowParentValue+";'"+row.getAttribute('rowdata')+"'";
+			rowParentId = rowParentId+';'+row.getAttribute('rowId');
+			if(row.getAttribute('type') == 'text')
+			{
+				rowParentValue = rowParentValue+";'"+row.getAttribute('rowdata')+"'";
+			}
+			else
+			{
+				rowParentValue = rowParentValue+";"+row.getAttribute('rowdata');
+			}
+			console.log('here');
+			sessionStorage.setItem('rowParentId', rowParentId);
+			sessionStorage.setItem('rowParentName', rowParentName);
+			sessionStorage.setItem('rowParentValue', rowParentValue);
+			sessionStorage.setItem('rowDistanceLevel', parseInt(row.getAttribute('distance'))+1);
+			
+			showDimensions();
 		}
 		else
 		{
-			rowParentValue = rowParentValue+";"+row.getAttribute('rowdata');
+			var message = document.getElementById('main-flash');
+			message.innerHTML = "Row already at the bottom level";
+			message.style.display = "block";
+			
+			$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
 		}
-		
-		sessionStorage.setItem('rowParentId', rowParentId);
-		sessionStorage.setItem('rowParentName', rowParentName);
-		sessionStorage.setItem('rowParentValue', rowParentValue);
-		sessionStorage.setItem('rowDistanceLevel', parseInt(row.getAttribute('distance'))+1);
 	}
-	showDimensions();
 }
 
 function columnDrillDown(column)
@@ -712,23 +709,39 @@ function columnDrillDown(column)
 		var columnParentId = sessionStorage.getItem('columnParentId');
 		var columnParentValue = sessionStorage.getItem('columnParentValue');
 		var columnParentName = column.getAttribute('columnname');
+		var columnIsTop = column.getAttribute('isTop');
+		var columnIsBottom = column.getAttribute('isBottom');
+		var columnDistance = column.getAttribute('distance');
 		
-		columnParentId = columnParentId+';'+column.getAttribute('columnId');
-		if(column.getAttribute('type') == 'text')
+		if(columnIsBottom != 1)
 		{
-			columnParentValue = columnParentValue+";'"+column.getAttribute('columndata')+"'";
+			columnParentId = columnParentId+';'+column.getAttribute('columnId');
+			if(column.getAttribute('type') == 'text')
+			{
+				columnParentValue = columnParentValue+";'"+column.getAttribute('columndata')+"'";
+			}
+			else
+			{
+				columnParentValue = columnParentValue+';'+column.getAttribute('columndata');
+			}
+			
+			sessionStorage.setItem('columnParentId', columnParentId);
+			sessionStorage.setItem('columnParentName', columnParentName);
+			sessionStorage.setItem('columnParentValue', columnParentValue);
+			sessionStorage.setItem('columnDistanceLevel', parseInt(column.getAttribute('distance'))+1);
+			
+			showDimensions();
 		}
 		else
 		{
-			columnParentValue = columnParentValue+';'+column.getAttribute('columndata');
+			var message = document.getElementById('main-flash');
+			message.innerHTML = "Column already at the bottom level";
+			message.style.display = "block";
+			
+			$("#main-flash").animate({opacity: 1.0}, 2000).fadeOut("slow");
 		}
-		
-		sessionStorage.setItem('columnParentId', columnParentId);
-		sessionStorage.setItem('columnParentName', columnParentName);
-		sessionStorage.setItem('columnParentValue', columnParentValue);
-		sessionStorage.setItem('columnDistanceLevel', parseInt(column.getAttribute('distance'))+1);
 	}
-	showDimensions();
+	
 }
 
 function chartCollapse(chart)
@@ -793,8 +806,8 @@ function showContext(event, cell)
 		
 		document.getElementById('drill-context-column').style.display = "none";
 		context.style.display = "block";
-		context.style.left = (position.x)+"px";
-		context.style.top = (position.y)+"px";
+		context.style.left = (position.x + 10)+"px";
+		context.style.top = (position.y + 10)+"px";
 	
 		rollup.addEventListener("click", function(){rollUp()}, false);
 		drilldown.addEventListener("click", function(){ rowDrillDown(cell) }, false);
@@ -807,8 +820,8 @@ function showContext(event, cell)
 		
 		document.getElementById('drill-context-row').style.display = "none";
 		context.style.display = "block";
-		context.style.left = (position.x)+"px";
-		context.style.top = (position.y)+"px";
+		context.style.left = (position.x + 10)+"px";
+		context.style.top = (position.y + 10)+"px";
 	
 		rollup.addEventListener("click", function(){columnRollUp()}, false);
 		drilldown.addEventListener("click", function(){ columnDrillDown(cell) }, false);

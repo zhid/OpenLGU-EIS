@@ -771,7 +771,7 @@
 	margin-top: 20px;
 	clear: left;
 }
-.indicator-data select#AddIndicator_column_id{
+.indicator-data select#AddThreshold_column_id{
 	height: 30px;
 	width: 300px;
 }
@@ -781,6 +781,18 @@
 	width: 320px;
 	font-family: Arial;
 	font-size: 17px;
+	margin-top: 20px;
+}
+#andindicator {
+	float: left;
+	padding-top: 5px;
+	padding-left: 5px;
+	height: 23px;
+	width: 293px;
+	font-family: Arial;
+	border: 1px solid black;
+	font-size: 17px;
+	margin-right: 20px;
 	margin-top: 20px;
 }
 .indicator-level {
@@ -795,10 +807,12 @@
 	margin-top: 20px;
 	margin-right: 20px;
 }
-#indicator-threshold input[type="text"]#AddIndicator_threshold {
+#indicator-threshold input[type="text"]#AddThreshold_lowthreshold, #indicator-threshold input[type="text"]#AddThreshold_highthreshold{
 	height: 25px;
 	width: 150px;
 }
+#indicator-threshold input::-webkit-input-placeholder { padding-left: 5px; }
+#indicator-threshold input:-moz-placeholder { padding-left: 5px; }
 #indicator-threshold {
 	float: left;
 	height: 30px;
@@ -807,11 +821,11 @@
 	font-size: 17px;
 	margin-top: 20px;
 }
-#indicator-operator  select#AddIndicator_indicator_type{
+#indicator-operator  select#AddThreshold_threshold_type{
 	height: 30px;
 	width: 370px;
 }
-#indicator-operator  select#AddIndicator_indicator_operator{
+#indicator-operator  select#AddThreshold_lowthreshold_operator, #indicator-operator  select#AddThreshold_highthreshold_operator{
 	height: 30px;
 	width: 200px;
 }

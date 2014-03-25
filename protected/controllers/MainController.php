@@ -112,7 +112,7 @@ Class MainController extends CController
 			//find row dimension with distance level of 0
 			$criteria = new CDbCriteria();
 			$criteria->select = 'category_id';
-			if($rowDistanceLevel == '0')
+			if($rowDistanceLevel == 0)
 			{
 				$criteria->condition = 'distance_level=:distance_level';
 				$criteria->params = array(':distance_level'=>(int)$rowDistanceLevel);

@@ -565,6 +565,24 @@ Class SettingsController extends CController
 			$column_hierarchy_command = Yii::app()->db->createCommand($column_hierarchy_query);
 			$column_hierarchy_command->execute();
 			
+			$begin_trigger_measure_name = preg_replace('/\s+/', '_', strtolower($measure_name));
+			$begin_trigger = "CREATE OR REPLACE FUNCTION $begin_trigger_measure_name"."_trigger_function() \n
+						RETURNS TRIGGER AS $$ \n
+						BEGIN \n
+						RAISE NOTICE 'Trigger Created!'; \n";
+			$end_trigger = "RETURN NEW \n;
+						END \n;
+						$$ LANGUAGE plpgsql; \n";
+						
+			$trigger_function_sql = "$begin_trigger \n $end_trigger \n";
+			$return = Yii::app()->db->createCommand($trigger_function_sql)->execute();
+
+			$trigger_sql = 'CREATE TRIGGER '.preg_replace('/\s+/', '_', strtolower($measure_name)).'_trigger
+					AFTER INSERT ON '.preg_replace('/\s+/', '_', strtolower($measure_name)).'
+					FOR EACH ROW EXECUTE PROCEDURE '.preg_replace('/\s+/', '_', strtolower($measure_name)).'_trigger_function()';
+			$return = Yii::app()->db->createCommand($trigger_sql)->execute();
+			
+			
 			$transaction->commit();
 			return TRUE;
 		}
@@ -951,11 +969,13 @@ Class SettingsController extends CController
 				{
 					$measure_id_array = array();
 					$measure_tables = array();
+					$trigger_function_names = array();
 					
 					//find all measures of the current area
 					$i = 0;
 					foreach($measures as $measure)
 					{
+						$trigger_function_names[$i] = preg_replace('/\s+/', '_', strtolower($measure->measure_name)).'_trigger_function()';
 						$measure_id_array[$i] = $measure->measure_id;
 						$measure_tables[$i] = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
 						$i++;
@@ -1025,6 +1045,12 @@ Class SettingsController extends CController
 					$criteria->condition = 'area_id=:area_id';
 					$criteria->params = array(':area_id'=>$_POST['areaid']);
 					Measure::model()->deleteAll($criteria);
+					
+					for($trig_count=0; $trig_count<count($trigger_function_names); $trig_count++)
+					{
+						$drop_function_sql = "DROP FUNCTION $trigger_function_names[$trig_count]";
+						$return = Yii::app()->db->createCommand($drop_function_sql)->execute();
+					}
 				}
 				
 				//deletes the logo of the area
@@ -1133,11 +1159,16 @@ Class SettingsController extends CController
 					$drop_measure_command = Yii::app()->db->createCommand();
 					$drop_measure_command->dropTable($measure_table);
 					
+					$trigger_measure_name = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
+					
 					//delete measure
 					$measure->delete();
 					
+					$drop_function_sql = "DROP FUNCTION $trigger_measure_name"."_trigger_function()";
+					$return = Yii::app()->db->createCommand($drop_function_sql)->execute();
+					
 					$transaction->commit();
-					Yii::app()->user->setFlash('deletemeasure_failed', "Measure has been deleted!");
+					Yii::app()->user->setFlash('deletemeasure_success', "Measure has been deleted!");
 				} catch(Exception $exception) {
 					$transaction->rollback();
 					Yii::app()->user->setFlash('deletemeasure_failed', "Deleting a measure failed!");
@@ -1252,11 +1283,21 @@ Class SettingsController extends CController
 								if($_POST['CreateColumnHierarchy'][$i]['category_id'] == $_POST['CreateColumnHierarchy'][$i]['parent_id'])
 								{
 									$isTop = true;
+									$isBottom = true;
+									
+									for($j=0; $j<count($_POST['CreateColumnHierarchy']); $j++)
+									{
+										if(($_POST['CreateColumnHierarchy'][$i]['category_id'] == $_POST['CreateColumnHierarchy'][$j]['parent_id']) && ($i != $j))
+										{
+											$isBottom = false;
+											break;
+										}
+									}
 								}
 								else
 								{
 									$isBottom = true;
-									for($j=0; $j<count($_POST['CreateColumnHierarchy'][$i]['category_id']); $j++)
+									for($j=0; $j<count($_POST['CreateColumnHierarchy']); $j++)
 									{
 										if(($_POST['CreateColumnHierarchy'][$i]['category_id'] == $_POST['CreateColumnHierarchy'][$j]['parent_id']) && ($i != $j))
 										{
@@ -1412,11 +1453,21 @@ Class SettingsController extends CController
 								if($_POST['CreateRowHierarchy'][$i]['category_id'] == $_POST['CreateRowHierarchy'][$i]['parent_id'])
 								{
 									$isTop = true;
+									$isBottom = true;
+									
+									for($j=0; $j<count($_POST['CreateRowHierarchy']); $j++)
+									{
+										if(($_POST['CreateRowHierarchy'][$i]['category_id'] == $_POST['CreateRowHierarchy'][$j]['parent_id']) && ($i != $j))
+										{
+											$isBottom = false;
+											break;
+										}
+									}
 								}
 								else
 								{
 									$isBottom = true;
-									for($j=0; $j<count($_POST['CreateRowHierarchy'][$i]['category_id']); $j++)
+									for($j=0; $j<count($_POST['CreateRowHierarchy']); $j++)
 									{
 										if(($_POST['CreateRowHierarchy'][$i]['category_id'] == $_POST['CreateRowHierarchy'][$j]['parent_id']) && ($i != $j))
 										{
@@ -1477,7 +1528,7 @@ Class SettingsController extends CController
 		}
 	}
 	
-	public function actionListindicators()
+	public function actionListthresholds()
 	{
 		if(isset($_GET['areaid']) && isset($_GET['measureid']))
 		{
@@ -1498,30 +1549,30 @@ Class SettingsController extends CController
 			{
 				$criteria = new CDbCriteria();
 				$criteria->select = '*';
-				$criteria->condition = 'area_id=:area_id';
-				$criteria->params = array(':area_id'=>$_GET['areaid']);
+				$criteria->condition = 'measure_id=:measure_id';
+				$criteria->params = array(':measure_id'=>$_GET['measureid']);
 				
-				$count = Indicator::model()->count($criteria);
+				$count = Threshold::model()->count($criteria);
 				$pages = new CPagination($count);
 				$pages->pageSize = 4;
 				$pages->applyLimit($criteria);
-				$indicators = Indicator::model()->findAll($criteria);
+				$thresholds = Threshold::model()->findAll($criteria);
 				$column_name = array();
 				$i = 0;
 				
-				foreach($indicators as $indicator)
+				foreach($thresholds as $threshold)
 				{
 					$criteria = new CDbCriteria();
 					$criteria->select = 'column_name';
 					$criteria->condition = 'column_id=:column_id';
-					$criteria->params = array(':column_id'=>$indicator->column_id);
+					$criteria->params = array(':column_id'=>$threshold->column_id);
 					$column = ColumnDimension::model()->find($criteria);
 					
 					$column_name[$i++] = $column->column_name;
 				}
 			
 				
-				$this->render('listofindicators', array('area'=>$area, 'measure'=>$measure, 'column_name'=>$column_name, 'indicators'=>$indicators, 'pages'=>$pages, 'count'=>$count));
+				$this->render('listofindicators', array('area'=>$area, 'measure'=>$measure, 'column_name'=>$column_name, 'thresholds'=>$thresholds, 'pages'=>$pages, 'count'=>$count));
 			}
 			else
 			{
@@ -1534,7 +1585,7 @@ Class SettingsController extends CController
 		}
 	}
 	
-	public function actionAddindicator()
+	public function actionAddthresholds()
 	{
 		if(isset($_GET['areaid']) && isset($_GET['measureid']))
 		{
@@ -1553,7 +1604,7 @@ Class SettingsController extends CController
 			
 			if($area != NULL && $measure != NULL)
 			{
-				$model = new AddIndicator();
+				$model = new AddThreshold();
 				
 				$criteria = new CDbCriteria();
 				$criteria->select = '*';
@@ -1567,80 +1618,176 @@ Class SettingsController extends CController
 					$column_id_array[$column->column_id] = $column->column_name;
 				}
 			
-				if(isset($_POST['AddIndicator']))
+				if(isset($_POST['AddThreshold']))
 				{
-					$model->area_id = $_POST['AddIndicator']['area_id'];
-					$model->column_id = $_POST['AddIndicator']['column_id'];
-					$model->threshold = $_POST['AddIndicator']['threshold'];
-					$model->indicator_operator = $_POST['AddIndicator']['indicator_operator'];
-					$model->indicator_type = $_POST['AddIndicator']['indicator_type'];
+					$model->measure_id = $_POST['AddThreshold']['measure_id'];
+					$model->column_id = $_POST['AddThreshold']['column_id'];
+					$model->lowthreshold = $_POST['AddThreshold']['lowthreshold'];
+					$model->highthreshold = $_POST['AddThreshold']['highthreshold'];
+					$model->highthreshold_operator = $_POST['AddThreshold']['highthreshold_operator'];
+					$model->lowthreshold_operator = $_POST['AddThreshold']['lowthreshold_operator'];
+					$model->threshold_type = $_POST['AddThreshold']['threshold_type'];
 					
 					if($model->validate())
 					{
-						$indicator_model = Indicator::model();
-						$transaction = $indicator_model->dbConnection->beginTransaction();
-					
+						$transaction = Yii::app()->db->beginTransaction();
+						
+						$criteria = new CDbCriteria();
+						$criteria->select = 'row_name';
+						$criteria->condition = 'measure_id=:measure_id';
+						$criteria->params = array(':measure_id'=>$measure->area_id);
+						$threshold_rows = RowDimension::model()->findAll($criteria);
+						$row_names = "";
+						
 						$criteria = new CDbCriteria();
 						$criteria->select = '*';
-						$criteria->condition = 'area_id=:area_id AND indicator_operator=:indicator_operator AND indicator_type=:indicator_type';
-						$criteria->params = array(':area_id'=>$model->area_id, ':indicator_operator'=>$model->indicator_operator, ':indicator_type'=>$model->indicator_type);
-						$indicators = $indicator_model->find($criteria);
+						$criteria->condition = 'column_id=:column_id AND threshold_type=:threshold_type';
+						$criteria->params = array(':column_id'=>$model->column_id, ':threshold_type'=>$model->threshold_type);
+						$thresholds = Threshold::model()->find($criteria);
 						
-						if($indicators != NULL)
+						foreach($threshold_rows as $threshold_row)
+						{
+							$name = preg_replace('/\s+/', '_', strtolower($threshold_row->row_name));
+							$row_names = "$row_names 'for', NEW.$name, ";
+						}
+						
+						if($thresholds != NULL)
 						{
 							try {
-								$indicators->area_id = $model->area_id;
-								$indicators->column_id = $model->column_id;
-								$indicators->threshold = $model->threshold;
-								$indicators->indicator_operator = $model->indicator_operator;
-								$indicators->indicator_type = $model->indicator_type;
+								$thresholds->measure_id = $model->measure_id;
+								$thresholds->column_id = $model->column_id;
+								$thresholds->lowthreshold = $model->lowthreshold;
+								$thresholds->highthreshold = $model->highthreshold;
+								$thresholds->lowthreshold_operator = $model->lowthreshold_operator;
+								$thresholds->highthreshold_operator = $model->highthreshold_operator;
+								$thresholds->threshold_type = $model->threshold_type;
 							
-								if($indicators->save())
+								if($thresholds->save())
 								{
 									$transaction->commit();
-									Yii::app()->user->setFlash('addindicator_success', "An indicator has been added!");
-									$this->refresh();
+									Yii::app()->user->setFlash('addthreshold_success', "Threshold has been added!");
+									
+									$criteria = new CDbCriteria();
+									$criteria->select = '*';
+									$criteria->condition = 'column_id=:column_id';
+									$criteria->params = array(':column_id'=>$model->column_id);
+									$current_thresholds = Threshold::model()->findAll($criteria);
+									
+									$trigger_condition = "";
+									foreach($current_thresholds as $current_threshold)
+									{
+										$criteria = new CDbCriteria();
+										$criteria->select = 'column_name';
+										$criteria->condition = 'column_id=:column_id';
+										$criteria->params = array(':column_id'=>$current_threshold->column_id);
+										$threshold_column = ColumnDimension::model()->find($criteria);
+										$column_label_name = $threshold_column->column_name;
+										$column_name = preg_replace('/\s+/', '_', strtolower($threshold_column->column_name));
+									
+										if($current_threshold->highthreshold != NULL)
+										{
+											$trigger_condition = "$trigger_condition IF (NEW.$column_name $current_threshold->lowthreshold_operator $current_threshold->lowthreshold AND NEW.$column_name $current_threshold->highthreshold_operator $current_threshold->highthreshold
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES ($measure->measure_id, $model->column_id, '$model->threshold_type', concat_ws(' ', '$column_label_name', 'is', NEW.$column_name, $row_names 'which is within the threshold of ', '$current_threshold->threshold_type'), now()); \n END IF; \n";
+										}
+										else
+										{
+											$trigger_condition = "$trigger_condition IF (NEW.$column_name $current_threshold->lowthreshold_operator $current_threshold->lowthreshold
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES ($measure->measure_id, $model->column_id, '$model->threshold_type', concat_ws(' ', '$column_label_name', 'is', NEW.$column_name, $row_names 'which is within the threshold of ', '$current_threshold->threshold_type'), now()); \n END IF; \n";
+										}
+										
+									}
+									
+									$begin_trigger_measure_name = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
+									$begin_trigger = "CREATE OR REPLACE FUNCTION $begin_trigger_measure_name"."_trigger_function() \n
+												RETURNS TRIGGER AS $$ \n
+												BEGIN \n";
+									$end_trigger = "RETURN NEW \n;
+												END \n;
+												$$ LANGUAGE plpgsql; \n";
+												
+									$trigger_function_sql = "$begin_trigger \n $trigger_condition \n $end_trigger \n";
+									$return = Yii::app()->db->createCommand($trigger_function_sql)->execute();
+									//$this->refresh();
 								}
 								else
 								{
 									$transaction->rollback();
-									Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+									Yii::app()->user->setFlash('addthreshold_failed', "Adding threshold failed!");
 								}
 							} catch (Exception $exception) {
-								$transaction->rollback();
-								Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+								//$transaction->rollback();
+								Yii::app()->user->setFlash('addthrehold_failed', "Adding threshold failed!");
+								echo $exception;
 							}
 						}
 						else
 						{
 							try {
-								$indicator = new Indicator;
+								$threshold = new Threshold;
 								
-								$indicator->area_id = $model->area_id;
-								$indicator->column_id = $model->column_id;
-								$indicator->threshold = $model->threshold;
-								$indicator->indicator_operator = $model->indicator_operator;
-								$indicator->indicator_type =$model->indicator_type;
+								$threshold->measure_id = $model->measure_id;
+								$threshold->column_id = $model->column_id;
+								$threshold->lowthreshold = $model->lowthreshold;
+								$threshold->highthreshold = $model->highthreshold;
+								$threshold->lowthreshold_operator = $model->lowthreshold_operator;
+								$threshold->highthreshold_operator = $model->highthreshold_operator;
+								$threshold->threshold_type = $model->threshold_type;
 								
-								if($indicator->save())
+								if($threshold->save())
 								{
 									$transaction->commit();
-									Yii::app()->user->setFlash('addindicator_success', "An indicator has been added!");
-									$this->refresh();
+									Yii::app()->user->setFlash('addthreshold_success', "Threshold has been added!");
+									
+									$trigger_condition = "";
+									foreach($current_thresholds as $current_threshold)
+									{
+										$criteria = new CDbCriteria();
+										$criteria->select = 'column_name';
+										$criteria->condition = 'column_id=:column_id';
+										$criteria->params = array(':column_id'=>$current_threshold->column_id);
+										$threshold_column = ColumnDimension::model()->find($criteria);
+										$column_label_name = $threshold_column->column_name;
+										$column_name = preg_replace('/\s+/', '_', strtolower($threshold_column->column_name));
+									
+										if($current_threshold->highthreshold != NULL)
+										{
+											$trigger_condition = "$trigger_condition IF (NEW.$column_name $current_threshold->lowthreshold_operator $current_threshold->lowthreshold AND NEW.$column_name $current_threshold->highthreshold_operator $current_threshold->highthreshold
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES ($measure->measure_id, $model->column_id, '$model->threshold_type', concat_ws(' ', '$column_label_name', 'is', NEW.$column_name, $row_names 'which is within the threshold of ', '$current_threshold->threshold_type'), now()); \n END IF; \n";
+										}
+										else
+										{
+											$trigger_condition = "$trigger_condition IF (NEW.$column_name $current_threshold->lowthreshold_operator $current_threshold->lowthreshold
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES ($measure->measure_id, $model->column_id, '$model->threshold_type', concat_ws(' ', '$column_label_name', 'is', NEW.$column_name, $row_names 'which is within the threshold of ', '$current_threshold->threshold_type'), now()); \n END IF; \n";
+										}
+										
+									}
+									
+									$begin_trigger_measure_name = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
+									$begin_trigger = "CREATE OR REPLACE FUNCTION $begin_trigger_measure_name"."_trigger_function() \n
+												RETURNS TRIGGER AS $$ \n
+												BEGIN \n";
+									$end_trigger = "RETURN NEW \n;
+												END \n;
+												$$ LANGUAGE plpgsql; \n";
+												
+									$trigger_function_sql = "$begin_trigger \n $trigger_condition \n $end_trigger \n";
+									$return = Yii::app()->db->createCommand($trigger_function_sql)->execute();
+									//$this->refresh();
 								}
 								else
 								{
-									$transaction->rollback();
-									Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+									//$transaction->rollback();
+									Yii::app()->user->setFlash('addthrehold_failed', "Adding threshold failed!");
 								}
 							} catch (Exception $exception) {
-								$transaction->rollback();
-								Yii::app()->user->setFlash('addindicator_failed', "Adding an indicator failed!");
+								//$transaction->rollback();
+								Yii::app()->user->setFlash('addthrehold_failed', "Adding threshold failed!");
+								echo $exception;
 							}
 						}
 					}
 				}
-				$this->render('addindicator', array('area'=>$area, 'measure'=>$measure, 'model'=>$model, 'column_id_array'=>$column_id_array));
+				$this->render('addthreshold', array('area'=>$area, 'measure'=>$measure, 'model'=>$model, 'column_id_array'=>$column_id_array));
 			}
 			else
 			{
@@ -1653,26 +1800,26 @@ Class SettingsController extends CController
 		}
 	}
 	
-	public function actionDeleteindicator()
+	public function actionDeletethreshold()
 	{
-		if(isset($_POST['indicatorid']))
+		if(isset($_POST['thresholdid']))
 		{
 			$transaction = Yii::app()->db->beginTransaction();
 		
 			try {
 				$criteria = new CDbCriteria();
 				$criteria->select = '*';
-				$criteria->condition = 'indicator_id=:indicator_id';
-				$criteria->params = array(':indicator_id'=>$_POST['indicatorid']);
-				Indicator::model()->deleteAll($criteria);
+				$criteria->condition = 'threshold_id=:threshold_id';
+				$criteria->params = array(':threshold_id'=>$_POST['thresholdid']);
+				Threshold::model()->deleteAll($criteria);
 				
 				$transaction->commit();
-				Yii::app()->user->setFlash('deleteindicator_success', "An indicator has been deleted!");
+				Yii::app()->user->setFlash('deletethreshold_success', "Threshold has been deleted!");
 			} catch(Exception $exception) {
 				$transaction->rollback();
-				Yii::app()->user->setFlash('deleteindicator_failed', "Deleting an indicator failed!");
+				Yii::app()->user->setFlash('deletethreshold_failed', "Deleting a threshold failed!");
 			}
-			$url = $this->createUrl('settings/listindicators', array('areaid'=>$_POST['areaid'], 'measureid'=>$_POST['measureid']), '&');
+			$url = $this->createUrl('settings/listthresholds', array('areaid'=>$_POST['areaid'], 'measureid'=>$_POST['measureid']), '&');
 			$this->redirect($url);
 		}
 		else
