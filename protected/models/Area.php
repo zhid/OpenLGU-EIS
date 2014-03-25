@@ -6,10 +6,15 @@
  * The followings are the available columns in table 'area':
  * @property integer $area_id
  * @property string $area_name
- * @property string $area_logo
  * @property integer $color_rating
  * @property string $managing_office
  * @property string $officer_in_charge
+ * @property boolean $visible
+ * @property integer $service_area
+ * @property string $area_logo
+ *
+ * The followings are the available model relations:
+ * @property Measure[] $measures
  */
 class Area extends CActiveRecord
 {
@@ -29,12 +34,14 @@ class Area extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('area_name, area_logo, color_rating', 'required'),
-			array('color_rating', 'numerical', 'integerOnly'=>true),
-			array('area_name, area_logo, managing_office, officer_in_charge', 'length', 'max'=>100),
+			array('area_name', 'required'),
+			array('color_rating, service_area', 'numerical', 'integerOnly'=>true),
+			array('area_name, managing_office, officer_in_charge', 'length', 'max'=>100),
+			array('area_logo', 'length', 'max'=>30),
+			array('visible', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('area_id, area_name, area_logo, color_rating, managing_office, officer_in_charge', 'safe', 'on'=>'search'),
+			array('area_id, area_name, color_rating, managing_office, officer_in_charge, visible, service_area, area_logo', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -46,6 +53,7 @@ class Area extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'measures' => array(self::HAS_MANY, 'Measure', 'area_id'),
 		);
 	}
 
@@ -57,10 +65,12 @@ class Area extends CActiveRecord
 		return array(
 			'area_id' => 'Area',
 			'area_name' => 'Area Name',
-			'area_logo' => 'Area Logo',
 			'color_rating' => 'Color Rating',
 			'managing_office' => 'Managing Office',
 			'officer_in_charge' => 'Officer In Charge',
+			'visible' => 'Visible',
+			'service_area' => 'Service Area',
+			'area_logo' => 'Area Logo',
 		);
 	}
 
@@ -84,10 +94,12 @@ class Area extends CActiveRecord
 
 		$criteria->compare('area_id',$this->area_id);
 		$criteria->compare('area_name',$this->area_name,true);
-		$criteria->compare('area_logo',$this->area_logo,true);
 		$criteria->compare('color_rating',$this->color_rating);
 		$criteria->compare('managing_office',$this->managing_office,true);
 		$criteria->compare('officer_in_charge',$this->officer_in_charge,true);
+		$criteria->compare('visible',$this->visible);
+		$criteria->compare('service_area',$this->service_area);
+		$criteria->compare('area_logo',$this->area_logo,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

@@ -1,30 +1,28 @@
 <?php
 
 /**
- * This is the model class for table "measure".
+ * This is the model class for table "alert".
  *
- * The followings are the available columns in table 'measure':
+ * The followings are the available columns in table 'alert':
+ * @property integer $alert_id
  * @property integer $measure_id
- * @property string $measure_name
- * @property integer $alert_level
- * @property integer $area_id
+ * @property integer $column_id
+ * @property string $alert_type
  * @property string $description
+ * @property string $date
+ * @property boolean $read
  *
  * The followings are the available model relations:
- * @property ColumnDimension[] $columnDimensions
- * @property Area $area
- * @property RowDimension[] $rowDimensions
- * @property Threshold[] $thresholds
- * @property Alert[] $alerts
+ * @property Measure $measure
  */
-class Measure extends CActiveRecord
+class Alert extends CActiveRecord
 {
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'measure';
+		return 'alert';
 	}
 
 	/**
@@ -35,13 +33,13 @@ class Measure extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('area_id', 'required'),
-			array('alert_level, area_id', 'numerical', 'integerOnly'=>true),
-			array('measure_name', 'length', 'max'=>100),
-			array('description', 'safe'),
+			array('measure_id, column_id, alert_type, description, date', 'required'),
+			array('measure_id, column_id', 'numerical', 'integerOnly'=>true),
+			array('alert_type', 'length', 'max'=>30),
+			array('read', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('measure_id, measure_name, alert_level, area_id, description', 'safe', 'on'=>'search'),
+			array('alert_id, measure_id, column_id, alert_type, description, date, read', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -53,11 +51,7 @@ class Measure extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'columnDimensions' => array(self::HAS_MANY, 'ColumnDimension', 'measure_id'),
-			'area' => array(self::BELONGS_TO, 'Area', 'area_id'),
-			'rowDimensions' => array(self::HAS_MANY, 'RowDimension', 'measure_id'),
-			'thresholds' => array(self::HAS_MANY, 'Threshold', 'measure_id'),
-			'alerts' => array(self::HAS_MANY, 'Alert', 'measure_id'),
+			'measure' => array(self::BELONGS_TO, 'Measure', 'measure_id'),
 		);
 	}
 
@@ -67,11 +61,13 @@ class Measure extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
+			'alert_id' => 'Alert',
 			'measure_id' => 'Measure',
-			'measure_name' => 'Measure Name',
-			'alert_level' => 'Alert Level',
-			'area_id' => 'Area',
+			'column_id' => 'Column',
+			'alert_type' => 'Alert Type',
 			'description' => 'Description',
+			'date' => 'Date',
+			'read' => 'Read',
 		);
 	}
 
@@ -93,11 +89,13 @@ class Measure extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
+		$criteria->compare('alert_id',$this->alert_id);
 		$criteria->compare('measure_id',$this->measure_id);
-		$criteria->compare('measure_name',$this->measure_name,true);
-		$criteria->compare('alert_level',$this->alert_level);
-		$criteria->compare('area_id',$this->area_id);
+		$criteria->compare('column_id',$this->column_id);
+		$criteria->compare('alert_type',$this->alert_type,true);
 		$criteria->compare('description',$this->description,true);
+		$criteria->compare('date',$this->date,true);
+		$criteria->compare('read',$this->read);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
@@ -108,7 +106,7 @@ class Measure extends CActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return Measure the static model class
+	 * @return Alert the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{

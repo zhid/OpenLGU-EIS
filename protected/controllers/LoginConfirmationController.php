@@ -2,8 +2,23 @@
 
 Class LoginConfirmationController extends CController
 {
+	public $breadcrumbs;
 	public $defaultAction = 'login';
 	public $loginError;
+	
+	public function actions()
+	{
+		return array(
+			'captcha'=>array(
+				'class'=>'CCaptchaAction',
+				'backColor'=>0xFFFFFF,
+			),
+			
+			'page'=>array(
+				'class'=>'CViewAction',
+			),
+		);
+	}
 	
 	public function actionLogin()
 	{
@@ -30,7 +45,8 @@ Class LoginConfirmationController extends CController
 			}
 		}
 		
-		$this->layout = 'login';
+		$breadcrumbs = "";
+		
 		$this->render('login', array('model'=>$model));
 	}
 }

@@ -2,7 +2,7 @@
 
 Class MainController extends CController
 {
-	public $defaultAction = 'panel';
+	public $defaultAction = 'servicearea';
 	public $image_map = "";
 	
 	public function filters()
@@ -29,21 +29,45 @@ Class MainController extends CController
 			),
 		);
 	}
+	
+	public function actionServicearea()
+	{
+		$this->render('servicearea');
+	}
 
 	public function actionPanel()
 	{
-		$criteria = new CDbCriteria();
-		$criteria->select = 'area_id, area_name, area_logo, color_rating';
-		$criteria->condition = 'visible=:visible';
-		$criteria->params = array(':visible'=>true);
-		
-		$areas = Area::model()->findAll($criteria);
-		$count = Area::model()->count($criteria);
-		$rem = $count%5;
-		
-		if($rem < 5){$rem = 5;}
-		
-		$this->render('main', array('areas'=>$areas, 'count'=>$count, 'size'=>round(($count/5)+$rem, 0, PHP_ROUND_HALF_DOWN)));
+		if(isset($_GET['servicearea']))
+		{
+			if($_GET['servicearea'] >= 1 && $_GET['servicearea'] <= 4)
+			{
+				$criteria = new CDbCriteria();
+				$criteria->select = 'area_id, area_name, color_rating, area_logo';
+				$criteria->condition = 'service_area=:service_area AND visible=:visible';
+				$criteria->params = array(':service_area'=>$_GET['servicearea'], ':visible'=>true);
+				$areas = Area::model()->findAll($criteria);
+				$count = Area::model()->count($criteria);
+				
+				if($count != 0)
+				{
+					$this->render('main', array('areas'=>$areas, 'servicearea'=>$_GET['servicearea']));
+				}
+				else
+				{
+					Yii::app()->user->setFlash('main-flash', 'No Areas Found!');
+					$url = $this->createUrl('/main/servicearea');
+					$this->redirect($url);
+				}
+			}
+			else
+			{
+				throw new CHttpException(404);
+			}
+		}
+		else
+		{
+			throw new CHttpException(404);
+		}
 	}
 	
 	public function actionLogout()
@@ -54,12 +78,12 @@ Class MainController extends CController
 	
 	public function actionDashboard()
 	{
-		if(isset($_GET['areaid']))
+		if(isset($_GET['areaid']) && isset($_GET['servicearea']))
 		{
 			$criteria = new CDbCriteria();
 			$criteria->select = '*';
-			$criteria->condition = 'area_id=:area_id';
-			$criteria->params = array(':area_id'=>$_GET['areaid']);
+			$criteria->condition = 'area_id=:area_id AND service_area=:service_area';
+			$criteria->params = array(':area_id'=>$_GET['areaid'], ':service_area'=>$_GET['servicearea']);
 			$area = Area::model()->find($criteria);
 			
 			if($area != NULL)
@@ -73,12 +97,12 @@ Class MainController extends CController
 			
 				if($measures != NULL)
 				{
-					$this->render('dashboard', array('area'=>$area, 'measures'=>$measures));
+					$this->render('dashboard', array('area'=>$area, 'measures'=>$measures, 'servicearea'=>$_GET['servicearea']));
 				}
 				else
 				{	
 					Yii::app()->user->setFlash('main-flash', ($area->area_name)." has no measure!");
-					$url = $this->createUrl('/main');
+					$url = $this->createUrl('/main/panel?servicearea='.$_GET['servicearea']);
 					$this->redirect($url);
 				}
 			}
@@ -531,7 +555,9 @@ Class MainController extends CController
 			}	
 			$chart_data_count++;
 		}
-		$plot = new PHPlot(1000, 600);
+		
+		$plot = new PHPlot(740, 400);
+		
 		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
 		$plot->SetDefaultTTFont('ARIAL.TTF');
 		$plot->SetFont('title', 'ARIALBD.TTF', 10);
@@ -579,20 +605,13 @@ Class MainController extends CController
 		
 			if(count($columns) == 1)
 			{
-				$plot = new PHPlot(1000, 600);
+				$plot = new PHPlot(740, 400);
 			}
-			else if(count($columns) == 2)
+			else if(count($columns) >= 2)
 			{
-				$plot = new PHPlot(500, 480);
+				$plot = new PHPlot(370, 400);
 			}
-			else if(count($columns) == 3)
-			{
-				$plot = new PHPlot(335, 480);
-			}
-			else if(count($columns) >= 4)
-			{
-				$plot = new PHPlot(335, 280);
-			}
+			
 			$plot->SetPrintImage(false);
 			$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
 			$plot->SetDefaultTTFont('ARIAL.TTF');
@@ -652,10 +671,10 @@ Class MainController extends CController
 		}
 		$max_bubble_size = 0;
 		$bubble_denom = 9;
-		$max_bubble_size = 600 / $bubble_denom;
+		$max_bubble_size = 400 / $bubble_denom;
 		
 		$chart = new Chart();
-		$plot = new PHPlot(1000, 600);
+		$plot = new PHPlot(740, 400);
 		$plot->SetPrintImage(false);
 		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
 		$plot->SetDefaultTTFont('ARIAL.TTF');
@@ -723,26 +742,18 @@ Class MainController extends CController
 			$chart = new Chart();
 			$max_bubble_size = 0;
 			$bubble_denom = 9;
+			
 			if(count($columns) == 1)
 			{
-				$plot = new PHPlot(1000, 600);
-				$max_bubble_size = 600 / $bubble_denom;
+				$plot = new PHPlot(740, 400);
+				$max_bubble_size = 400 / $bubble_denom;
 			}
-			else if(count($columns) == 2)
+			else if(count($columns) >= 2)
 			{
-				$plot = new PHPlot(500, 480);
-				$max_bubble_size = 480 / $bubble_denom;
+				$plot = new PHPlot(370, 400);
+				$max_bubble_size = 400 / $bubble_denom;
 			}
-			else if(count($columns) == 3)
-			{
-				$plot = new PHPlot(335, 480);
-				$max_bubble_size = 480 / $bubble_denom;
-			}
-			else if(count($columns) >= 4)
-			{
-				$plot = new PHPlot(335, 280);
-				$max_bubble_size = 280 / $bubble_denom;
-			}
+			
 			
 			$chart = new Chart();
 			$plot->SetPrintImage(false);
@@ -814,7 +825,9 @@ Class MainController extends CController
 			}	
 			$chart_data_count++;
 		}
-		$plot = new PHPlot(1000, 500);
+		
+		$plot = new PHPlot(740, 400);
+		
 		$plot->SetPrintImage(False);
 		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
 		$plot->SetDefaultTTFont('ARIAL.TTF');
@@ -866,19 +879,11 @@ Class MainController extends CController
 			//create and configure the PHPlot object.
 			if(count($columns) == 1)
 			{
-				$plot = new PHPlot(1000, 500);
+				$plot = new PHPlot(740, 400);
 			}
-			else if(count($columns) == 2)
+			else if(count($columns) >= 2)
 			{
-				$plot = new PHPlot(500, 480);
-			}
-			else if(count($columns) == 3)
-			{
-				$plot = new PHPlot(335, 480);
-			}
-			else if(count($columns) >= 4)
-			{
-				$plot = new PHPlot(335, 280);
+				$plot = new PHPlot(370, 400);
 			}
 			
 			$plot->SetPrintImage(False);
@@ -940,7 +945,10 @@ Class MainController extends CController
 			}	
 			$chart_data_count++;
 		}
-		$plot = new PHPlot(1000, 500);
+		
+		$plot = new PHPlot(740, 400);
+			
+		
 		//set up the rest of the plot:
 		$plot->SetPrintImage(False);
 		$plot->SetTTFPath(Yii::getPathOfAlias('webroot.fonts'));
@@ -993,19 +1001,11 @@ Class MainController extends CController
 			//create and configure the PHPlot object.
 			if(count($columns) == 1)
 			{
-				$plot = new PHPlot(1000, 500);
+				$plot = new PHPlot(740, 400);
 			}
-			else if(count($columns) == 2)
+			else if(count($columns) >= 2)
 			{
-				$plot = new PHPlot(500, 480);
-			}
-			else if(count($columns) == 3)
-			{
-				$plot = new PHPlot(335, 480);
-			}
-			else if(count($columns) >= 4)
-			{
-				$plot = new PHPlot(335, 280);
+				$plot = new PHPlot(370, 400);
 			}
 			
 			//set up the rest of the plot:
@@ -1072,7 +1072,7 @@ Class MainController extends CController
 		
 		$chart = new Chart();
 		
-		$plot = new PHPlot(1000, 500);
+		$plot = new PHPlot(740, 400);
 		
 		//Disable error images, since this script produces HTML:
 		$plot->SetFailureImage(False);
@@ -1144,19 +1144,11 @@ Class MainController extends CController
 			
 			if(count($columns) == 1)
 			{
-				$plot = new PHPlot(1000, 500);
+				$plot = new PHPlot(740, 400);
 			}
-			else if(count($columns) == 2)
+			else if(count($columns) >= 2)
 			{
-				$plot = new PHPlot(500, 480);
-			}
-			else if(count($columns) == 3)
-			{
-				$plot = new PHPlot(335, 480);
-			}
-			else if(count($columns) >= 4)
-			{
-				$plot = new PHPlot(335, 280);
+				$plot = new PHPlot(370, 400);
 			}
 			
 			//Disable error images, since this script produces HTML:

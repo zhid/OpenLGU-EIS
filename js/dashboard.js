@@ -20,7 +20,7 @@ function init()
 		else
 		{
 			chart_btn[i].setAttribute('ischartselected', 'false');
-			chart_btn[i].style.border = '1px solid white';
+			chart_btn[i].style.border = '1px dashed black';
 			chart_btn[i].style.backgroundColor = 'white';
 		}
 	}
@@ -105,7 +105,7 @@ function loadViewModeData()
 				else
 				{
 					chart_btn[i].setAttribute('ischartselected', 'false');
-					chart_btn[i].style.border = '1px solid white';
+					chart_btn[i].style.border = '1px dashed black';
 					chart_btn[i].style.backgroundColor = 'white';
 				}
 			}
@@ -479,7 +479,7 @@ function setViewMode(viewmode)
 	for(var i=0; i<chart_btn.length; i++)
 	{
 		chart_btn[i].setAttribute('ischartselected', 'false');
-		chart_btn[i].style.border = '1px solid white';
+		chart_btn[i].style.border = '1px dashed black';
 		chart_btn[i].style.backgroundColor = 'white';
 	}
 	viewmode.setAttribute('ischartselected', 'true');

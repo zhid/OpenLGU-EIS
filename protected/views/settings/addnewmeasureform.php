@@ -135,7 +135,7 @@
 		<?php endforeach;?>
 		<div class="row">
 			<?php echo CHtml::button('<< Previous', array('onClick'=>"window.location.href='addnewmeasure?areaid=".($area_id)."&page=".($page-1)."'")); ?>
-			<?php echo CHtml::submitButton('Add New Measure'); ?>
+			<?php echo CHtml::submitButton('Add Measure'); ?>
 		</div>
 	<?php echo CHtml::endForm(); ?>
 	

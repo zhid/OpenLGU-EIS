@@ -3,10 +3,11 @@
 Class AddArea extends CFormModel
 {
 	public $area_name;
-	public $area_logo;
 	public $color_rating;
 	public $managing_office;
 	public $officer_in_charge;
+	public $service_area;
+	public $area_logo;
 
 	public function rules()
 	{
@@ -15,7 +16,8 @@ Class AddArea extends CFormModel
 			array('area_name', 'checkareaname'),
 			array('managing_office', 'required'),
 			array('officer_in_charge', 'required'),
-			array('area_logo', 'file','types'=>'png, jpg, gif'),
+			array('area_logo', 'required'),
+			array('service_area', 'required'),
 		);
 	}
 	

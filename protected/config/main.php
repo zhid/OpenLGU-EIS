@@ -7,7 +7,7 @@
 // CWebApplication properties can be configured here.
 return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
-	'name'=>'Executive Information System',
+	'name'=>'OpenLGU - Executive Information System',
 	'defaultController'=>'loginconfirmation',
 
 	// preloading 'log' component

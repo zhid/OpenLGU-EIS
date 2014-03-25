@@ -1,12 +1,5 @@
-<!--This page is the Main Panel for the Executive Information System-->
-<style type="text/css">
-	#main-menu ul li:nth-of-type(1) a {
-		border-bottom: 5px solid #bfee32;
-	}
-</style>
-
 <script>
-function openArea()
+function clearSessionStorage()
 {
 	if(window.sessionStorage)
 	{	
@@ -18,40 +11,49 @@ function openArea()
 <?php
 	Yii::app()->clientScript->registerScript(
 	   'myHideEffect',
-	   '$("#main-flash").animate({opacity: 1.0}, 3000).fadeOut("slow");',
+	   '$("#flash-msg").animate({opacity: 1.0}, 3000).fadeOut("slow");',
 	   CClientScript::POS_READY
 	);
 ?>
 
 <?php if(Yii::app()->user->hasFlash('main-flash')):?>
-	<div id="main-flash">
+	<div class="flash-error" id="flash-msg">
 		<?php echo Yii::app()->user->getFlash('main-flash'); ?>
 	</div>
 <?php endif;?>
 
-<div id="app-name">
-	Executive Information System
-</div>
-<div class="panel" style="height:<?php echo ($size/5)*300; ?>px">
+<div id="overview-name">
 	<?php
-		foreach($areas as $area)
-		{
-			echo '
-				<div class="wrapper">
-					<a onclick="openArea()" href="'.Yii::app()->getHomeUrl().'/main/dashboard?areaid='.($area->area_id).'">
-					<div class="area-border">
-						<div class="area-container">
-							<div class="color-rating-container">
-								<img style="-webkit-transform: rotate(0deg); -moz-transform: rotate(0deg);" class="pin" src="'.(Yii::app()->request->baseUrl).'/images/meter-pin.png" />
-							</div>
-							<img class="area-logo" src="'.(Yii::app()->request->baseUrl).'/images/logo/'.($area->area_logo).'" alt="'.($area->area_logo).'" />
-						</div>
-					</div>
-					</a>
-					<div class="area-name">
-						'.($area->area_name).'
-					</div>
-				</div>';
-		}
+		$this->widget('zii.widgets.CBreadcrumbs', array(
+			'links'=>array(
+				'Main'=>array('main/servicearea'),
+				'Areas of Concern',
+			),
+			'homeLink'=>false,
+		));
 	?>
+</div>
+
+<div class="container" style="min-height: 450px;">
+	<table style="margin-top: 20px;">
+		<?php $i = 0; ?>
+		<tbody>
+			<?php foreach($areas as $area): ?>
+			<?php 
+				if((($i % 6) == 1 && $i != 1) || $i == 0)
+				{
+					echo '<tr>';
+				}
+			?>
+				<td width="150"><a href="<?php echo Yii::app()->getHomeUrl().'/main/dashboard?servicearea='.$servicearea.'&areaid='.($area->area_id) ?> "><center><i class="<?php echo $area->area_logo; ?>"></i></center><center><?php echo $area->area_name ?></center></a></td>
+				<?php $i++; ?>
+			<?php 
+				if($i % 6 == 0 && $i != 0)
+				{
+					echo '</tr>';
+				}
+			?>
+			<?php endforeach; ?>
+		</tbody>
+	</table>
 </div>

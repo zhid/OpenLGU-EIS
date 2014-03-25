@@ -8,6 +8,7 @@ Class EditArea extends CFormModel
 	public $managing_office;
 	public $officer_in_charge;
 	public $visible;
+	public $service_area;
 
 	public function rules()
 	{
@@ -16,7 +17,8 @@ Class EditArea extends CFormModel
 			array('area_name', 'checkareaname'),
 			array('managing_office', 'required'),
 			array('officer_in_charge', 'required'),
-			array('area_logo', 'checklogotype'),
+			array('service_area', 'required'),
+			array('area_logo', 'required')
 		);
 	}
 	
@@ -31,19 +33,6 @@ Class EditArea extends CFormModel
 		if($count > 0)
 		{
 			$this->addError('area_name', 'Area name already exist in the database');
-		}
-	}
-	
-	public function checklogotype()
-	{
-		if($this->area_logo != NULL)
-		{
-			$ext = $this->area_logo->getExtensionName();
-		
-			if($ext != 'jpg' && $ext != 'png' && $ext != 'gif')
-			{
-				$this->addError('area_logo', 'Only files with these extensions are allowed: png, jpg, gif.');
-			}
 		}
 	}
 }
