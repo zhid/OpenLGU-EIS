@@ -26,144 +26,175 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
--- Name: development_fund_trigger_function(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: development_fund_trigger_function(); Type: FUNCTION; Schema: public; Owner: openlgu
 --
 
 CREATE FUNCTION development_fund_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ 
-
-						BEGIN 
-
-						RAISE NOTICE 'Trigger Created!'; 
- 
- RETURN NEW 
-;
-						END 
-;
+    AS $$ 
+
+						BEGIN 
+
+						RAISE NOTICE 'Trigger Created!'; 
+
+ RETURN NEW 
+
+;
+
+						END 
+
+;
+
 						$$;
 
 
-ALTER FUNCTION public.development_fund_trigger_function() OWNER TO postgres;
+ALTER FUNCTION public.development_fund_trigger_function() OWNER TO mypguser;
 
 --
--- Name: enrollment_rate_in_secondary_schools_trigger_function(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: enrollment_rate_in_secondary_schools_trigger_function(); Type: FUNCTION; Schema: public; Owner: openlgu
 --
 
 CREATE FUNCTION enrollment_rate_in_secondary_schools_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ 
-
-						BEGIN 
-
-						RAISE NOTICE 'Trigger Created!'; 
- 
- RETURN NEW 
-;
-						END 
-;
+    AS $$ 
+
+						BEGIN 
+
+						RAISE NOTICE 'Trigger Created!'; 
+
+ RETURN NEW 
+
+;
+
+						END 
+
+;
+
 						$$;
 
 
-ALTER FUNCTION public.enrollment_rate_in_secondary_schools_trigger_function() OWNER TO postgres;
+ALTER FUNCTION public.enrollment_rate_in_secondary_schools_trigger_function() OWNER TO mypguser;
 
 --
--- Name: household_sewage_disposal_trigger_function(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: household_sewage_disposal_trigger_function(); Type: FUNCTION; Schema: public; Owner: openlgu
 --
 
 CREATE FUNCTION household_sewage_disposal_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ 
-
-						BEGIN 
-
-						RAISE NOTICE 'Trigger Created!'; 
- 
- RETURN NEW 
-;
-						END 
-;
+    AS $$ 
+
+						BEGIN 
+
+						RAISE NOTICE 'Trigger Created!'; 
+
+ RETURN NEW 
+
+;
+
+						END 
+
+;
+
 						$$;
 
 
-ALTER FUNCTION public.household_sewage_disposal_trigger_function() OWNER TO postgres;
+ALTER FUNCTION public.household_sewage_disposal_trigger_function() OWNER TO mypguser;
 
 --
--- Name: rat_infestation_damage_trigger_function(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: rat_infestation_damage_trigger_function(); Type: FUNCTION; Schema: public; Owner: openlgu
 --
 
 CREATE FUNCTION rat_infestation_damage_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ 
-
-												BEGIN 
- 
-  IF (NEW.estimated_loss > 150000
-											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES (2, 5, 'high threat level', concat_ws(' ', 'Estimated Loss', 'is', NEW.estimated_loss,  'for', NEW.barangay_surveyed,  'for', NEW.crop_commodities_affected,  'which is within the threshold of ', 'high threat level'), now()); 
- END IF; 
- IF (NEW.estimated_loss >= 150000
-											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES (2, 5, 'low threat level', concat_ws(' ', 'Estimated Loss', 'is', NEW.estimated_loss,  'for', NEW.barangay_surveyed,  'for', NEW.crop_commodities_affected,  'which is within the threshold of ', 'low threat level'), now()); 
- END IF; 
- 
- RETURN NEW 
-;
-												END 
-;
+    AS $$ 
+
+												BEGIN 
+
+  IF (NEW.estimated_loss > 150000
+
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES (2, 5, 'high threat level', concat_ws(' ', 'Estimated Loss', 'is', NEW.estimated_loss,  'for', NEW.barangay_surveyed,  'for', NEW.crop_commodities_affected,  'which is within the threshold of ', 'high threat level'), now()); 
+
+ END IF; 
+
+ IF (NEW.estimated_loss >= 150000
+
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES (2, 5, 'low threat level', concat_ws(' ', 'Estimated Loss', 'is', NEW.estimated_loss,  'for', NEW.barangay_surveyed,  'for', NEW.crop_commodities_affected,  'which is within the threshold of ', 'low threat level'), now()); 
+
+ END IF; 
+
+ RETURN NEW 
+
+;
+
+												END 
+
+;
+
 												$$;
 
 
-ALTER FUNCTION public.rat_infestation_damage_trigger_function() OWNER TO postgres;
+ALTER FUNCTION public.rat_infestation_damage_trigger_function() OWNER TO mypguser;
 
 --
--- Name: solid_waste_disposal_trigger_function(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: solid_waste_disposal_trigger_function(); Type: FUNCTION; Schema: public; Owner: openlgu
 --
 
 CREATE FUNCTION solid_waste_disposal_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ 
-
-						BEGIN 
-
-						RAISE NOTICE 'Trigger Created!'; 
- 
- RETURN NEW 
-;
-						END 
-;
+    AS $$ 
+
+						BEGIN 
+
+						RAISE NOTICE 'Trigger Created!'; 
+
+ RETURN NEW 
+
+;
+
+						END 
+
+;
+
 						$$;
 
 
-ALTER FUNCTION public.solid_waste_disposal_trigger_function() OWNER TO postgres;
+ALTER FUNCTION public.solid_waste_disposal_trigger_function() OWNER TO mypguser;
 
 --
--- Name: statement_of_expenditures_trigger_function(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: statement_of_expenditures_trigger_function(); Type: FUNCTION; Schema: public; Owner: openlgu
 --
 
 CREATE FUNCTION statement_of_expenditures_trigger_function() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ 
-
-												BEGIN 
- 
-  IF (NEW.fund_used > 500000000
-											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES (25, 31, 'high threat level', concat_ws(' ', 'Fund Used', 'is', NEW.fund_used,  'for', NEW.services,  'for', NEW.specific_allotment,  'which is within the threshold of ', 'high threat level'), now()); 
- END IF; 
- 
- RETURN NEW 
-;
-												END 
-;
+    AS $$ 
+
+												BEGIN 
+
+  IF (NEW.fund_used > 500000000
+
+											) THEN INSERT INTO alert (measure_id, column_id, alert_type, description, date) VALUES (25, 31, 'high threat level', concat_ws(' ', 'Fund Used', 'is', NEW.fund_used,  'for', NEW.services,  'for', NEW.specific_allotment,  'which is within the threshold of ', 'high threat level'), now()); 
+
+ END IF; 
+
+ RETURN NEW 
+
+;
+
+												END 
+
+;
+
 												$$;
 
 
-ALTER FUNCTION public.statement_of_expenditures_trigger_function() OWNER TO postgres;
+ALTER FUNCTION public.statement_of_expenditures_trigger_function() OWNER TO mypguser;
 
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- Name: alert; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: alert; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE alert (
@@ -172,15 +203,15 @@ CREATE TABLE alert (
     column_id integer NOT NULL,
     alert_type character varying(30) NOT NULL,
     description text NOT NULL,
-    date date NOT NULL,
+    date timestamp without time zone NOT NULL,
     read boolean DEFAULT false NOT NULL
 );
 
 
-ALTER TABLE public.alert OWNER TO postgres;
+ALTER TABLE public.alert OWNER TO mypguser;
 
 --
--- Name: alert_alert_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: alert_alert_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE alert_alert_id_seq
@@ -191,17 +222,17 @@ CREATE SEQUENCE alert_alert_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.alert_alert_id_seq OWNER TO postgres;
+ALTER TABLE public.alert_alert_id_seq OWNER TO mypguser;
 
 --
--- Name: alert_alert_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: alert_alert_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE alert_alert_id_seq OWNED BY alert.alert_id;
 
 
 --
--- Name: area_id_sequence; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: area_id_sequence; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE area_id_sequence
@@ -212,16 +243,16 @@ CREATE SEQUENCE area_id_sequence
     CACHE 1;
 
 
-ALTER TABLE public.area_id_sequence OWNER TO postgres;
+ALTER TABLE public.area_id_sequence OWNER TO mypguser;
 
 --
--- Name: area; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: area; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE area (
     area_id integer DEFAULT nextval('area_id_sequence'::regclass) NOT NULL,
     area_name character varying(100) NOT NULL,
-    color_rating integer DEFAULT 0 NOT NULL,
+    color_rating integer DEFAULT 1 NOT NULL,
     managing_office character varying(100),
     officer_in_charge character varying(100),
     visible boolean DEFAULT true NOT NULL,
@@ -230,10 +261,10 @@ CREATE TABLE area (
 );
 
 
-ALTER TABLE public.area OWNER TO postgres;
+ALTER TABLE public.area OWNER TO mypguser;
 
 --
--- Name: column_dimension; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: column_dimension; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE column_dimension (
@@ -244,10 +275,10 @@ CREATE TABLE column_dimension (
 );
 
 
-ALTER TABLE public.column_dimension OWNER TO postgres;
+ALTER TABLE public.column_dimension OWNER TO mypguser;
 
 --
--- Name: column_column_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: column_column_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE column_column_id_seq
@@ -258,17 +289,17 @@ CREATE SEQUENCE column_column_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.column_column_id_seq OWNER TO postgres;
+ALTER TABLE public.column_column_id_seq OWNER TO mypguser;
 
 --
--- Name: column_column_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: column_column_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE column_column_id_seq OWNED BY column_dimension.column_id;
 
 
 --
--- Name: column_hierarchy; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: column_hierarchy; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE column_hierarchy (
@@ -281,10 +312,10 @@ CREATE TABLE column_hierarchy (
 );
 
 
-ALTER TABLE public.column_hierarchy OWNER TO postgres;
+ALTER TABLE public.column_hierarchy OWNER TO mypguser;
 
 --
--- Name: column_hierarchy_column_hierarchy_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: column_hierarchy_column_hierarchy_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE column_hierarchy_column_hierarchy_id_seq
@@ -295,17 +326,17 @@ CREATE SEQUENCE column_hierarchy_column_hierarchy_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.column_hierarchy_column_hierarchy_id_seq OWNER TO postgres;
+ALTER TABLE public.column_hierarchy_column_hierarchy_id_seq OWNER TO mypguser;
 
 --
--- Name: column_hierarchy_column_hierarchy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: column_hierarchy_column_hierarchy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE column_hierarchy_column_hierarchy_id_seq OWNED BY column_hierarchy.column_hierarchy_id;
 
 
 --
--- Name: development_fund; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: development_fund; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE development_fund (
@@ -315,10 +346,10 @@ CREATE TABLE development_fund (
 );
 
 
-ALTER TABLE public.development_fund OWNER TO postgres;
+ALTER TABLE public.development_fund OWNER TO mypguser;
 
 --
--- Name: enrollment_rate_in_secondary_schools; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: enrollment_rate_in_secondary_schools; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE enrollment_rate_in_secondary_schools (
@@ -331,10 +362,10 @@ CREATE TABLE enrollment_rate_in_secondary_schools (
 );
 
 
-ALTER TABLE public.enrollment_rate_in_secondary_schools OWNER TO postgres;
+ALTER TABLE public.enrollment_rate_in_secondary_schools OWNER TO mypguser;
 
 --
--- Name: household_sewage_disposal; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: household_sewage_disposal; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE household_sewage_disposal (
@@ -343,10 +374,10 @@ CREATE TABLE household_sewage_disposal (
 );
 
 
-ALTER TABLE public.household_sewage_disposal OWNER TO postgres;
+ALTER TABLE public.household_sewage_disposal OWNER TO mypguser;
 
 --
--- Name: threshold; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: threshold; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE threshold (
@@ -361,10 +392,10 @@ CREATE TABLE threshold (
 );
 
 
-ALTER TABLE public.threshold OWNER TO postgres;
+ALTER TABLE public.threshold OWNER TO mypguser;
 
 --
--- Name: indicator_indicator_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: indicator_indicator_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE indicator_indicator_id_seq
@@ -375,17 +406,17 @@ CREATE SEQUENCE indicator_indicator_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.indicator_indicator_id_seq OWNER TO postgres;
+ALTER TABLE public.indicator_indicator_id_seq OWNER TO mypguser;
 
 --
--- Name: indicator_indicator_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: indicator_indicator_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE indicator_indicator_id_seq OWNED BY threshold.threshold_id;
 
 
 --
--- Name: measure; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: measure; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE measure (
@@ -397,10 +428,10 @@ CREATE TABLE measure (
 );
 
 
-ALTER TABLE public.measure OWNER TO postgres;
+ALTER TABLE public.measure OWNER TO mypguser;
 
 --
--- Name: measure_measure_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: measure_measure_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE measure_measure_id_seq
@@ -411,17 +442,17 @@ CREATE SEQUENCE measure_measure_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.measure_measure_id_seq OWNER TO postgres;
+ALTER TABLE public.measure_measure_id_seq OWNER TO mypguser;
 
 --
--- Name: measure_measure_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: measure_measure_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE measure_measure_id_seq OWNED BY measure.measure_id;
 
 
 --
--- Name: rat_infestation_damage; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: rat_infestation_damage; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE rat_infestation_damage (
@@ -435,10 +466,10 @@ CREATE TABLE rat_infestation_damage (
 );
 
 
-ALTER TABLE public.rat_infestation_damage OWNER TO postgres;
+ALTER TABLE public.rat_infestation_damage OWNER TO mypguser;
 
 --
--- Name: row_dimension; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: row_dimension; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE row_dimension (
@@ -449,10 +480,10 @@ CREATE TABLE row_dimension (
 );
 
 
-ALTER TABLE public.row_dimension OWNER TO postgres;
+ALTER TABLE public.row_dimension OWNER TO mypguser;
 
 --
--- Name: row_hierarchy; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: row_hierarchy; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE row_hierarchy (
@@ -465,10 +496,10 @@ CREATE TABLE row_hierarchy (
 );
 
 
-ALTER TABLE public.row_hierarchy OWNER TO postgres;
+ALTER TABLE public.row_hierarchy OWNER TO mypguser;
 
 --
--- Name: row_hierarchy_row_hierarchy_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: row_hierarchy_row_hierarchy_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE row_hierarchy_row_hierarchy_id_seq
@@ -479,17 +510,17 @@ CREATE SEQUENCE row_hierarchy_row_hierarchy_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.row_hierarchy_row_hierarchy_id_seq OWNER TO postgres;
+ALTER TABLE public.row_hierarchy_row_hierarchy_id_seq OWNER TO mypguser;
 
 --
--- Name: row_hierarchy_row_hierarchy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: row_hierarchy_row_hierarchy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE row_hierarchy_row_hierarchy_id_seq OWNED BY row_hierarchy.row_hierarchy_id;
 
 
 --
--- Name: row_row_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: row_row_id_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
 --
 
 CREATE SEQUENCE row_row_id_seq
@@ -500,17 +531,17 @@ CREATE SEQUENCE row_row_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.row_row_id_seq OWNER TO postgres;
+ALTER TABLE public.row_row_id_seq OWNER TO mypguser;
 
 --
--- Name: row_row_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: row_row_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
 --
 
 ALTER SEQUENCE row_row_id_seq OWNED BY row_dimension.row_id;
 
 
 --
--- Name: solid_waste_disposal; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: solid_waste_disposal; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE solid_waste_disposal (
@@ -519,10 +550,10 @@ CREATE TABLE solid_waste_disposal (
 );
 
 
-ALTER TABLE public.solid_waste_disposal OWNER TO postgres;
+ALTER TABLE public.solid_waste_disposal OWNER TO mypguser;
 
 --
--- Name: statement_of_expenditures; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: statement_of_expenditures; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE statement_of_expenditures (
@@ -532,130 +563,160 @@ CREATE TABLE statement_of_expenditures (
 );
 
 
-ALTER TABLE public.statement_of_expenditures OWNER TO postgres;
+ALTER TABLE public.statement_of_expenditures OWNER TO mypguser;
 
 --
--- Name: user_identification; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_identification; Type: TABLE; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 CREATE TABLE user_identification (
     username character varying(50) NOT NULL,
     password character varying(10) NOT NULL,
-    role character varying(30)
+    role character varying(30),
+    area_id integer,
+    userid integer NOT NULL
 );
 
 
-ALTER TABLE public.user_identification OWNER TO postgres;
+ALTER TABLE public.user_identification OWNER TO mypguser;
 
 --
--- Name: alert_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_identification_userid_seq; Type: SEQUENCE; Schema: public; Owner: openlgu
+--
+
+CREATE SEQUENCE user_identification_userid_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.user_identification_userid_seq OWNER TO mypguser;
+
+--
+-- Name: user_identification_userid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: openlgu
+--
+
+ALTER SEQUENCE user_identification_userid_seq OWNED BY user_identification.userid;
+
+
+--
+-- Name: alert_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY alert ALTER COLUMN alert_id SET DEFAULT nextval('alert_alert_id_seq'::regclass);
 
 
 --
--- Name: column_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: column_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY column_dimension ALTER COLUMN column_id SET DEFAULT nextval('column_column_id_seq'::regclass);
 
 
 --
--- Name: column_hierarchy_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: column_hierarchy_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY column_hierarchy ALTER COLUMN column_hierarchy_id SET DEFAULT nextval('column_hierarchy_column_hierarchy_id_seq'::regclass);
 
 
 --
--- Name: measure_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: measure_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY measure ALTER COLUMN measure_id SET DEFAULT nextval('measure_measure_id_seq'::regclass);
 
 
 --
--- Name: row_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: row_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY row_dimension ALTER COLUMN row_id SET DEFAULT nextval('row_row_id_seq'::regclass);
 
 
 --
--- Name: row_hierarchy_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: row_hierarchy_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY row_hierarchy ALTER COLUMN row_hierarchy_id SET DEFAULT nextval('row_hierarchy_row_hierarchy_id_seq'::regclass);
 
 
 --
--- Name: threshold_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: threshold_id; Type: DEFAULT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY threshold ALTER COLUMN threshold_id SET DEFAULT nextval('indicator_indicator_id_seq'::regclass);
 
 
 --
--- Data for Name: alert; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Name: userid; Type: DEFAULT; Schema: public; Owner: openlgu
+--
+
+ALTER TABLE ONLY user_identification ALTER COLUMN userid SET DEFAULT nextval('user_identification_userid_seq'::regclass);
+
+
+--
+-- Data for Name: alert; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY alert (alert_id, measure_id, column_id, alert_type, description, date, read) FROM stdin;
-2	2	2	moderate threat level	Farmers Affected is 309 for Colosas for Banana which is within the threshold of  moderate threat level	2014-02-28	f
-3	2	2	low threat level	Farmers Affected is 201 for Colosas for Cassava which is within the threshold of  low threat level	2014-02-28	f
-4	2	2	low threat level	Farmers Affected is 250 for Colosas for Camote which is within the threshold of  low threat level	2014-02-28	f
-5	2	2	low threat level	Farmers Affected is 74 for Colosas for Coconut which is within the threshold of  low threat level	2014-02-28	f
-6	2	2	low threat level	Farmers Affected is 45 for Colosas for Cacao which is within the threshold of  low threat level	2014-02-28	f
-7	2	2	low threat level	Farmers Affected is 10 for Colosas for Mongo which is within the threshold of  low threat level	2014-02-28	f
-8	2	2	low threat level	Farmers Affected is 45 for Colosas for Gabi which is within the threshold of  low threat level	2014-02-28	f
-9	2	2	low threat level	Farmers Affected is 5 for Colosas for Upland Rice which is within the threshold of  low threat level	2014-02-28	f
-10	25	31	high threat level	Fund Used is 513771372 for General Services for Personal Services which is within the threshold of  high threat level	2014-03-07	f
-11	25	31	high threat level	Fund Used is 1213174412 for General Services for Maintenance and Operating Expenses which is within the threshold of  high threat level	2014-03-07	f
-12	25	31	high threat level	Fund Used is 843055801 for Economic Services for Maintenance and Operating Expenses which is within the threshold of  high threat level	2014-03-07	f
-13	25	31	high threat level	Fund Used is 755054436 for Social Services for Maintenance and Operating Expenses which is within the threshold of  high threat level	2014-03-07	f
-14	2	2	low threat level	Farmers Affected is 2 for Colosas for Soybeans which is within the threshold of  low threat level	2014-03-07	f
-15	2	2	low threat level	Farmers Affected is 9 for Colosas for Peanut which is within the threshold of  low threat level	2014-03-07	f
-16	2	2	low threat level	Farmers Affected is 2 for Colosas for Coffee which is within the threshold of  low threat level	2014-03-07	f
+6	2	2	low threat level	Farmers Affected is 45 for Colosas for Cacao which is within the threshold of  low threat level	2014-02-28 00:00:00	f
+7	2	2	low threat level	Farmers Affected is 10 for Colosas for Mongo which is within the threshold of  low threat level	2014-02-28 00:00:00	f
+8	2	2	low threat level	Farmers Affected is 45 for Colosas for Gabi which is within the threshold of  low threat level	2014-02-28 00:00:00	f
+9	2	2	low threat level	Farmers Affected is 5 for Colosas for Upland Rice which is within the threshold of  low threat level	2014-02-28 00:00:00	f
+10	25	31	high threat level	Fund Used is 513771372 for General Services for Personal Services which is within the threshold of  high threat level	2014-03-07 00:00:00	f
+11	25	31	high threat level	Fund Used is 1213174412 for General Services for Maintenance and Operating Expenses which is within the threshold of  high threat level	2014-03-07 00:00:00	f
+12	25	31	high threat level	Fund Used is 843055801 for Economic Services for Maintenance and Operating Expenses which is within the threshold of  high threat level	2014-03-07 00:00:00	f
+14	2	2	low threat level	Farmers Affected is 2 for Colosas for Soybeans which is within the threshold of  low threat level	2014-03-07 00:00:00	f
+15	2	2	low threat level	Farmers Affected is 9 for Colosas for Peanut which is within the threshold of  low threat level	2014-03-07 00:00:00	f
+16	2	2	low threat level	Farmers Affected is 2 for Colosas for Coffee which is within the threshold of  low threat level	2014-03-07 00:00:00	f
+2	2	2	moderate threat level	Farmers Affected is 309 for Colosas for Banana which is within the threshold of  moderate threat level	2014-02-28 00:00:00	t
+3	2	2	low threat level	Farmers Affected is 201 for Colosas for Cassava which is within the threshold of  low threat level	2014-02-28 00:00:00	t
+13	25	31	high threat level	Fund Used is 755054436 for Social Services for Maintenance and Operating Expenses which is within the threshold of  high threat level	2014-03-07 00:00:00	t
+4	2	2	low threat level	Farmers Affected is 250 for Colosas for Camote which is within the threshold of  low threat level	2014-02-28 00:00:00	t
+5	2	2	low threat level	Farmers Affected is 74 for Colosas for Coconut which is within the threshold of  low threat level	2014-02-28 00:00:00	t
 \.
 
 
 --
--- Name: alert_alert_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: alert_alert_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('alert_alert_id_seq', 16, true);
 
 
 --
--- Data for Name: area; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: area; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY area (area_id, area_name, color_rating, managing_office, officer_in_charge, visible, service_area, area_logo) FROM stdin;
-23	Project Planning	0	-	-	t	1	fa fa-tasks fa-5x
-21	Tourism	0	-	-	t	2	fa fa-home fa-5x
-20	Financial Accountability	1	Accounting Office	-	t	4	fa fa-money fa-5x
-27	Support to Education	0	-	-	t	2	fa fa-book fa-5x
+20	Financial Accountability	2	Accounting Office	-	t	4	fa fa-money fa-5x
+25	Proper Household Waste Disposal	1	Municipal Health Office	-	t	5	fa fa-home fa-5x
+23	Project Planning	1	-	-	t	1	fa fa-tasks fa-5x
+21	Tourism	1	-	-	t	2	fa fa-home fa-5x
+27	Support to Education	1	-	-	t	2	fa fa-book fa-5x
 2	Agriculture	3	City Department of Agriculture	None	t	3	fa fa-leaf fa-5x
-25	Proper Household Waste Disposal	0	Municipal Health Office	-	t	5	fa fa-home fa-5x
 \.
 
 
 --
--- Name: area_id_sequence; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: area_id_sequence; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('area_id_sequence', 27, true);
 
 
 --
--- Name: column_column_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: column_column_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('column_column_id_seq', 46, true);
 
 
 --
--- Data for Name: column_dimension; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: column_dimension; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY column_dimension (measure_id, column_id, column_name, column_data_type) FROM stdin;
@@ -675,7 +736,7 @@ COPY column_dimension (measure_id, column_id, column_name, column_data_type) FRO
 
 
 --
--- Data for Name: column_hierarchy; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: column_hierarchy; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY column_hierarchy (column_hierarchy_id, category_id, parent_id, top_flag, bottom_flag, distance_level) FROM stdin;
@@ -702,14 +763,14 @@ COPY column_hierarchy (column_hierarchy_id, category_id, parent_id, top_flag, bo
 
 
 --
--- Name: column_hierarchy_column_hierarchy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: column_hierarchy_column_hierarchy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('column_hierarchy_column_hierarchy_id_seq', 42, true);
 
 
 --
--- Data for Name: development_fund; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: development_fund; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY development_fund (program, specific_appropriation, fund_released) FROM stdin;
@@ -734,7 +795,7 @@ Amortization for Development Projects	Expenses for Agro Proc Center	7412000
 
 
 --
--- Data for Name: enrollment_rate_in_secondary_schools; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: enrollment_rate_in_secondary_schools; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY enrollment_rate_in_secondary_schools (school_location, school_type, school_name, number_of_male_students, number_of_female_students, total_number_of_students) FROM stdin;
@@ -743,7 +804,7 @@ Salapawan	Private	A P Guevarra IS	124	93	217
 
 
 --
--- Data for Name: household_sewage_disposal; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: household_sewage_disposal; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY household_sewage_disposal (type_of_disposal, number_of_households) FROM stdin;
@@ -756,14 +817,14 @@ Pan Collection	30
 
 
 --
--- Name: indicator_indicator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: indicator_indicator_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('indicator_indicator_id_seq', 17, true);
 
 
 --
--- Data for Name: measure; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: measure; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY measure (measure_id, measure_name, alert_level, area_id, description) FROM stdin;
@@ -777,14 +838,14 @@ COPY measure (measure_id, measure_name, alert_level, area_id, description) FROM 
 
 
 --
--- Name: measure_measure_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: measure_measure_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('measure_measure_id_seq', 36, true);
 
 
 --
--- Data for Name: rat_infestation_damage; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: rat_infestation_damage; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY rat_infestation_damage (barangay_surveyed, crop_commodities_affected, farmers_affected, total_area_planted, estimated_area_damage, estimated_loss, cost_of_damage) FROM stdin;
@@ -834,7 +895,7 @@ Fatima	Corn	197	94.189999999999998	65.900000000000006	329.60000000000002	2307200
 
 
 --
--- Data for Name: row_dimension; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: row_dimension; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY row_dimension (measure_id, row_id, row_name, row_data_type) FROM stdin;
@@ -853,7 +914,7 @@ COPY row_dimension (measure_id, row_id, row_name, row_data_type) FROM stdin;
 
 
 --
--- Data for Name: row_hierarchy; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: row_hierarchy; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY row_hierarchy (row_hierarchy_id, category_id, parent_id, top_flag, bottom_flag, distance_level) FROM stdin;
@@ -872,21 +933,21 @@ COPY row_hierarchy (row_hierarchy_id, category_id, parent_id, top_flag, bottom_f
 
 
 --
--- Name: row_hierarchy_row_hierarchy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: row_hierarchy_row_hierarchy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('row_hierarchy_row_hierarchy_id_seq', 46, true);
 
 
 --
--- Name: row_row_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: row_row_id_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
 --
 
 SELECT pg_catalog.setval('row_row_id_seq', 50, true);
 
 
 --
--- Data for Name: solid_waste_disposal; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: solid_waste_disposal; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY solid_waste_disposal (method_solid_waste_disposal, number_of_households) FROM stdin;
@@ -899,7 +960,7 @@ Others	14
 
 
 --
--- Data for Name: statement_of_expenditures; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: statement_of_expenditures; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY statement_of_expenditures (services, specific_allotment, fund_used) FROM stdin;
@@ -917,7 +978,7 @@ General Service	Year-end Bonus	231496671
 
 
 --
--- Data for Name: threshold; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: threshold; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
 COPY threshold (threshold_id, measure_id, column_id, lowthreshold, lowthreshold_operator, threshold_type, highthreshold, highthreshold_operator) FROM stdin;
@@ -930,17 +991,25 @@ COPY threshold (threshold_id, measure_id, column_id, lowthreshold, lowthreshold_
 
 
 --
--- Data for Name: user_identification; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: user_identification; Type: TABLE DATA; Schema: public; Owner: openlgu
 --
 
-COPY user_identification (username, password, role) FROM stdin;
-admin	admin	admin
-mayor	mayor	LCE
+COPY user_identification (username, password, role, area_id, userid) FROM stdin;
+admin	admin	admin	\N	1
+Spencer Hastings	hastings	dataencoder	2	2
+mayor	mayor	LCE	\N	3
 \.
 
 
 --
--- Name: alert_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_identification_userid_seq; Type: SEQUENCE SET; Schema: public; Owner: openlgu
+--
+
+SELECT pg_catalog.setval('user_identification_userid_seq', 3, true);
+
+
+--
+-- Name: alert_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY alert
@@ -948,7 +1017,7 @@ ALTER TABLE ONLY alert
 
 
 --
--- Name: area_area_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: area_area_name_key; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY area
@@ -956,7 +1025,7 @@ ALTER TABLE ONLY area
 
 
 --
--- Name: area_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: area_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY area
@@ -964,7 +1033,7 @@ ALTER TABLE ONLY area
 
 
 --
--- Name: column_dimension_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: column_dimension_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY column_dimension
@@ -972,7 +1041,7 @@ ALTER TABLE ONLY column_dimension
 
 
 --
--- Name: column_hierarchy_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: column_hierarchy_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY column_hierarchy
@@ -980,7 +1049,7 @@ ALTER TABLE ONLY column_hierarchy
 
 
 --
--- Name: indicator_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: indicator_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY threshold
@@ -988,7 +1057,7 @@ ALTER TABLE ONLY threshold
 
 
 --
--- Name: measure_measure_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: measure_measure_name_key; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY measure
@@ -996,7 +1065,7 @@ ALTER TABLE ONLY measure
 
 
 --
--- Name: measure_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: measure_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY measure
@@ -1004,7 +1073,7 @@ ALTER TABLE ONLY measure
 
 
 --
--- Name: row_dimension_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: row_dimension_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY row_dimension
@@ -1012,7 +1081,7 @@ ALTER TABLE ONLY row_dimension
 
 
 --
--- Name: row_hierarchy_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: row_hierarchy_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY row_hierarchy
@@ -1020,57 +1089,65 @@ ALTER TABLE ONLY row_hierarchy
 
 
 --
--- Name: user_identification_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: user_identification_pkey; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
 --
 
 ALTER TABLE ONLY user_identification
-    ADD CONSTRAINT user_identification_pkey PRIMARY KEY (username);
+    ADD CONSTRAINT user_identification_pkey PRIMARY KEY (userid);
 
 
 --
--- Name: development_fund_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: user_identification_username_key; Type: CONSTRAINT; Schema: public; Owner: openlgu; Tablespace: 
+--
+
+ALTER TABLE ONLY user_identification
+    ADD CONSTRAINT user_identification_username_key UNIQUE (username);
+
+
+--
+-- Name: development_fund_trigger; Type: TRIGGER; Schema: public; Owner: openlgu
 --
 
 CREATE TRIGGER development_fund_trigger AFTER INSERT ON development_fund FOR EACH ROW EXECUTE PROCEDURE development_fund_trigger_function();
 
 
 --
--- Name: enrollment_rate_in_secondary_schools_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: enrollment_rate_in_secondary_schools_trigger; Type: TRIGGER; Schema: public; Owner: openlgu
 --
 
 CREATE TRIGGER enrollment_rate_in_secondary_schools_trigger AFTER INSERT ON enrollment_rate_in_secondary_schools FOR EACH ROW EXECUTE PROCEDURE enrollment_rate_in_secondary_schools_trigger_function();
 
 
 --
--- Name: household_sewage_disposal_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: household_sewage_disposal_trigger; Type: TRIGGER; Schema: public; Owner: openlgu
 --
 
 CREATE TRIGGER household_sewage_disposal_trigger AFTER INSERT ON household_sewage_disposal FOR EACH ROW EXECUTE PROCEDURE household_sewage_disposal_trigger_function();
 
 
 --
--- Name: rat_infestation_damage_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: rat_infestation_damage_trigger; Type: TRIGGER; Schema: public; Owner: openlgu
 --
 
 CREATE TRIGGER rat_infestation_damage_trigger AFTER INSERT ON rat_infestation_damage FOR EACH ROW EXECUTE PROCEDURE rat_infestation_damage_trigger_function();
 
 
 --
--- Name: solid_waste_disposal_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: solid_waste_disposal_trigger; Type: TRIGGER; Schema: public; Owner: openlgu
 --
 
 CREATE TRIGGER solid_waste_disposal_trigger AFTER INSERT ON solid_waste_disposal FOR EACH ROW EXECUTE PROCEDURE solid_waste_disposal_trigger_function();
 
 
 --
--- Name: statement_of_expenditures_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: statement_of_expenditures_trigger; Type: TRIGGER; Schema: public; Owner: openlgu
 --
 
 CREATE TRIGGER statement_of_expenditures_trigger AFTER INSERT ON statement_of_expenditures FOR EACH ROW EXECUTE PROCEDURE statement_of_expenditures_trigger_function();
 
 
 --
--- Name: alert_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: alert_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY alert
@@ -1078,7 +1155,7 @@ ALTER TABLE ONLY alert
 
 
 --
--- Name: column_dimension_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: column_dimension_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY column_dimension
@@ -1086,7 +1163,7 @@ ALTER TABLE ONLY column_dimension
 
 
 --
--- Name: indicator_column_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: indicator_column_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY threshold
@@ -1094,7 +1171,7 @@ ALTER TABLE ONLY threshold
 
 
 --
--- Name: measure_area_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: measure_area_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY measure
@@ -1102,7 +1179,7 @@ ALTER TABLE ONLY measure
 
 
 --
--- Name: row_dimension_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: row_dimension_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY row_dimension
@@ -1110,11 +1187,19 @@ ALTER TABLE ONLY row_dimension
 
 
 --
--- Name: threshold_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: threshold_measure_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
 --
 
 ALTER TABLE ONLY threshold
     ADD CONSTRAINT threshold_measure_id_fkey FOREIGN KEY (measure_id) REFERENCES measure(measure_id);
+
+
+--
+-- Name: user_identification_area_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: openlgu
+--
+
+ALTER TABLE ONLY user_identification
+    ADD CONSTRAINT user_identification_area_id_fkey FOREIGN KEY (area_id) REFERENCES area(area_id);
 
 
 --
