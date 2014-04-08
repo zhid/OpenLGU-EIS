@@ -59,7 +59,8 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
-					'Settings'=>array('settings/adduser'),
+					'Settings'=>array('settings/edituserinfo'),
+					'Areas'=>array('settings/listofareas'),
 					'List of Areas',
 				),
 				'homeLink'=>false,

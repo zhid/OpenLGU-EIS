@@ -545,6 +545,7 @@ function queryData()
 	rows = rows.split(',');
 	
 	var item_count, values = new Array(), item;
+	var row_value = "";
 	for(var i=0; i<rows.length; i++)
 	{
 		item_count = document.forms.namedItem(rows[i]+'_form').elements;
@@ -559,6 +560,7 @@ function queryData()
 		}
 		
 		formData.append(rows[i]+'_values', values);
+		//row_value = row_value+'<input type="hidden" id="'+rows[i]+'_values" name="'+rows[i]+'_values" value="'+values+'"/>';
 	}
 	
 	var columns = sessionStorage.getItem('columnName').toLowerCase();
@@ -568,6 +570,7 @@ function queryData()
 	}
 	columns = columns.split(',');
 	
+	var column_sort = "";
 	for(var i=0; i<columns.length; i++)
 	{
 		var item = document.forms.namedItem(columns[i]+'_form').elements;
@@ -582,6 +585,7 @@ function queryData()
 		}
 		
 		formData.append(columns[i]+'_sort', value);
+		//column_sort = column_sort+'<input type="hidden" id="'+columns[i]+'_sort" name="'+columns[i]+'_sort" value="'+value+'"/>';
 	}
 	
 	formData.append('isAjax', 1);
@@ -596,6 +600,20 @@ function queryData()
 	formData.append('rowParentId', sessionStorage.getItem('rowParentId'));
 	formData.append('rowParentValue', sessionStorage.getItem('rowParentValue'));
 	formData.append('viewMode', sessionStorage.getItem('viewMode'));
+	
+	/*document.getElementById('column_sort_container').innerHTML = column_sort;
+	document.getElementById('row_values_container').innerHTML = row_value;
+	document.getElementById('chartCollapse').value = sessionStorage.getItem('chartCollapse');
+	document.getElementById('measureId').value = sessionStorage.getItem('measureId');
+	document.getElementById('columnName').value = sessionStorage.getItem('columnName');
+	document.getElementById('columnDistanceLevel').value = sessionStorage.getItem('columnDistanceLevel');
+	document.getElementById('columnParentId').value = sessionStorage.getItem('columnParentId');
+	document.getElementById('columnParentValue').value = sessionStorage.getItem('columnParentValue');
+	document.getElementById('rowName').value = sessionStorage.getItem('rowName');
+	document.getElementById('rowDistanceLevel').val = sessionStorage.getItem('rowDistanceLevel');
+	document.getElementById('rowParentId').value = sessionStorage.getItem('rowParentId');
+	document.getElementById('rowParentValue').value = sessionStorage.getItem('rowParentValue');
+	document.getElementById('viewMode').value = sessionStorage.getItem('viewMode');*/
 	
 	if(window.sessionStorage)
 	{

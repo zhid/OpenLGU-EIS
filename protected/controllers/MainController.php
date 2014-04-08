@@ -15,17 +15,13 @@ Class MainController extends CController
 	public function accessRules()
 	{
 		return array (
-			array('deny',
-				'actions'=>array('querydata', 'renderNoCollapseAreaView', 'renderAreaView', 'renderNoCollapseBubbleView', 'renderBubbleView', 'renderNoCollapsePieView', 'renderPieView', 'renderNoCollapseLineView', 'renderLineView', 'renderNoCollapseBarView', 'renderBarView', 'renderTableView'),
-				'users'=>array('?'),
-			),
 			array ('deny',
-				'actions'=>array('index', 'panel', 'logout', 'main', 'dashboard', 'getdimension', 'servicearea'),
-				'users'=>array('?'),
+				'actions'=>array('index', 'servicearea', 'panel', 'dashboard', 'getdimensions', 'querydata', 'renderNoCollapseAreaView', 'renderAreaView', 'renderNoCollapsePieView', 'renderPieView', 'renderNoCollapseLineView', 'renderLineView', 'renderNoCollapseBarView', 'renderBarView', 'renderTableView', 'markalert', 'myalerts'),
+				'roles'=>array('dataencoder'),
 			),
 			array ('allow',
-				'actions'=>array('index', 'panel', 'logout', 'getdimensions', 'dashboard', 'main'),
-				'users'=>array('@'),
+				'actions'=>array('index', 'servicearea', 'panel', 'dashboard', 'getdimensions', 'querydata', 'renderNoCollapseAreaView', 'renderAreaView', 'renderNoCollapsePieView', 'renderPieView', 'renderNoCollapseLineView', 'renderLineView', 'renderNoCollapseBarView', 'renderBarView', 'renderTableView', 'markalert', 'myalerts'),
+				'roles'=>array('LCE', 'admin'),
 			),
 		);
 	}
@@ -102,8 +98,8 @@ Class MainController extends CController
 					{
 						$criteria = new CDbCriteria();
 						$criteria->select = '*';
-						$criteria->condition = 'measure_id=:measure_id';
-						$criteria->params = array(':measure_id'=>$measure->measure_id);
+						$criteria->condition = 'measure_id=:measure_id AND read=:read';
+						$criteria->params = array(':measure_id'=>$measure->measure_id, ':read'=>FALSE);
 						$alert_count = Alert::model()->count($criteria);
 	
 						$total_count = $total_count + $alert_count;
@@ -425,191 +421,197 @@ Class MainController extends CController
 		{
 			if(isset($_POST['isAjax']))
 			{
-				$criteria = new CDbCriteria();
-				$criteria->select = 'measure_name, measure_id';
-				$criteria->condition = 'measure_id=:measure_id';
-				$criteria->params = array(':measure_id'=>$_POST['measureId']);
-				$measure = Measure::model()->find($criteria);
-				
-				$collapse = $_POST['chartCollapse'];
-				
-				$table = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
-				$row_name = $_POST['rowName']; $row_name = explode(",", $row_name);
-				$column_name = $_POST['columnName']; $column_name = explode(",", $column_name);
+				$isAjax = TRUE;
+			}
+			else
+			{
+				$isAjax = FALSE;
+			}
 			
-				$columns = $_POST['columnName'];
-				$columns = preg_replace('/\s+/', '_', strtolower($columns));
-				$columns = explode(",", $columns);
-				
-				$rows = $_POST['rowName'];
-				$rows = preg_replace('/\s+/', '_', strtolower($rows));
-				$rows = explode(",", $rows);
-				
-				$rowParentId = explode(';', $_POST['rowParentId']);
-				$rowParentValue = explode(';', $_POST['rowParentValue']);
-				$columnParentId = explode(';', $_POST['columnParentId']);
-				$columnParentValue = explode(';', $_POST['columnParentValue']);
-				$row_hierarchy_condition = ""; 
-				$column_hierarchy_condition = "";
-				$drilldown_hierarchy_condition = "";
-				
-				if($_POST['rowDistanceLevel'] != 0)
-				{
-					for($i=1; $i<count($rowParentId); $i++)
-					{	
-						$dimension = RowDimension::model()->find(array('select'=>'row_name', 'condition'=>'row_id=:row_id', 'params'=>array(':row_id'=>(int)$rowParentId[$i])));
-						$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->row_name));
-						
-						$row_hierarchy_condition = $row_hierarchy_condition.''.$dimension_name.' = '.$rowParentValue[$i];
-						if($i != count($rowParentId)-1)
-						{
-							$row_hierarchy_condition = $row_hierarchy_condition.' AND ';
-						}
-					}
-				}
-				if($_POST['columnDistanceLevel'] != 0)
-				{
-					for($i=1; $i<count($columnParentId); $i++)
-					{
-						$dimension = ColumnDimension::model()->find(array('select'=>'column_name', 'condition'=>'column_id=:column_id', 'params'=>array(':column_id'=>(int)$columnParentId[$i])));
-						$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->column_name));
+			$criteria = new CDbCriteria();
+			$criteria->select = 'measure_name, measure_id';
+			$criteria->condition = 'measure_id=:measure_id';
+			$criteria->params = array(':measure_id'=>$_POST['measureId']);
+			$measure = Measure::model()->find($criteria);
+			
+			$collapse = $_POST['chartCollapse'];
+			
+			$table = preg_replace('/\s+/', '_', strtolower($measure->measure_name));
+			$row_name = $_POST['rowName']; $row_name = explode(",", $row_name);
+			$column_name = $_POST['columnName']; $column_name = explode(",", $column_name);
+		
+			$columns = $_POST['columnName'];
+			$columns = preg_replace('/\s+/', '_', strtolower($columns));
+			$columns = explode(",", $columns);
+			
+			$rows = $_POST['rowName'];
+			$rows = preg_replace('/\s+/', '_', strtolower($rows));
+			$rows = explode(",", $rows);
+			
+			$rowParentId = explode(';', $_POST['rowParentId']);
+			$rowParentValue = explode(';', $_POST['rowParentValue']);
+			$columnParentId = explode(';', $_POST['columnParentId']);
+			$columnParentValue = explode(';', $_POST['columnParentValue']);
+			$row_hierarchy_condition = ""; 
+			$column_hierarchy_condition = "";
+			$drilldown_hierarchy_condition = "";
+			
+			if($_POST['rowDistanceLevel'] != 0)
+			{
+				for($i=1; $i<count($rowParentId); $i++)
+				{	
+					$dimension = RowDimension::model()->find(array('select'=>'row_name', 'condition'=>'row_id=:row_id', 'params'=>array(':row_id'=>(int)$rowParentId[$i])));
+					$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->row_name));
 					
-						$column_hierarchy_condition = $column_hierarchy_condition.''.$dimension_name.' = '.$columnParentValue[$i];
-						if($i != count($columnParentId)-1)
-						{
-							$column_hierarchy_condition = $column_hierarchy_condition.' AND ';
-						}
+					$row_hierarchy_condition = $row_hierarchy_condition.''.$dimension_name.' = '.$rowParentValue[$i];
+					if($i != count($rowParentId)-1)
+					{
+						$row_hierarchy_condition = $row_hierarchy_condition.' AND ';
 					}
 				}
-				if($row_hierarchy_condition != "" && $column_hierarchy_condition == "")
+			}
+			if($_POST['columnDistanceLevel'] != 0)
+			{
+				for($i=1; $i<count($columnParentId); $i++)
 				{
-					$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND ';
+					$dimension = ColumnDimension::model()->find(array('select'=>'column_name', 'condition'=>'column_id=:column_id', 'params'=>array(':column_id'=>(int)$columnParentId[$i])));
+					$dimension_name = preg_replace('/\s+/', '_', strtolower($dimension->column_name));
+				
+					$column_hierarchy_condition = $column_hierarchy_condition.''.$dimension_name.' = '.$columnParentValue[$i];
+					if($i != count($columnParentId)-1)
+					{
+						$column_hierarchy_condition = $column_hierarchy_condition.' AND ';
+					}
 				}
-				else if($row_hierarchy_condition == "" && $column_hierarchy_condition != "")
+			}
+			if($row_hierarchy_condition != "" && $column_hierarchy_condition == "")
+			{
+				$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND ';
+			}
+			else if($row_hierarchy_condition == "" && $column_hierarchy_condition != "")
+			{
+				//$drilldown_hierarchy_condition = $column_hierarchy_condition.' AND ';
+				$drilldown_hierarchy_condition = "";
+			}
+			else if($row_hierarchy_condition != "" && $column_hierarchy_condition != "")
+			{
+				$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND ';
+			}
+			else
+			{
+				$drilldown_hierarchy_condition = "";
+			}
+			
+			$select_command = 'SELECT ';
+			$where_command = '';
+			$group_by_command = ' GROUP BY ';
+			$order_by_command = ' ORDER BY ';
+			$no_filter = "'no filter'";
+			for($i=0; $i<count($rows); $i++)
+			{
+				$select_command = $select_command.''.$rows[$i].', ';
+				if($_POST[$rows[$i].'_values'] !== '')
 				{
-					//$drilldown_hierarchy_condition = $column_hierarchy_condition.' AND ';
-					$drilldown_hierarchy_condition = "";
-				}
-				else if($row_hierarchy_condition != "" && $column_hierarchy_condition != "")
-				{
-					$drilldown_hierarchy_condition = $row_hierarchy_condition.' AND ';
+					$where_command = $where_command .''.$rows[$i].' IN ('.$_POST[$rows[$i].'_values'].')';
 				}
 				else
 				{
-					$drilldown_hierarchy_condition = "";
+					$where_command = $where_command .''.$rows[$i].' IN ('.$no_filter.')';
 				}
-				
-				$select_command = 'SELECT ';
-				$where_command = '';
-				$group_by_command = ' GROUP BY ';
-				$order_by_command = ' ORDER BY ';
-				$no_filter = "'no filter'";
-				for($i=0; $i<count($rows); $i++)
+				$group_by_command = $group_by_command.''.$rows[$i];
+				if($i != count($rows)-1)
+				{ 
+					$where_command  = $where_command .' AND '; 
+					$group_by_command = $group_by_command.', ';
+				}
+			}
+			$order_count = 0;
+			for($i=0; $i<count($columns); $i++)
+			{
+				$select_command = $select_command.'sum('.$columns[$i].') "'.$columns[$i].'"';
+				if($_POST[$columns[$i].'_sort'] !== 'NONE')
 				{
-					$select_command = $select_command.''.$rows[$i].', ';
-					if($_POST[$rows[$i].'_values'] !== '')
+					if($order_count === 0)
 					{
-						$where_command = $where_command .''.$rows[$i].' IN ('.$_POST[$rows[$i].'_values'].')';
+						$order_by_command = $order_by_command.''.$columns[$i].' '.$_POST[$columns[$i].'_sort'];
 					}
 					else
 					{
-						$where_command = $where_command .''.$rows[$i].' IN ('.$no_filter.')';
+						$order_by_command = $order_by_command.', '.$columns[$i].' '.$_POST[$columns[$i].'_sort'];
 					}
-					$group_by_command = $group_by_command.''.$rows[$i];
-					if($i != count($rows)-1)
-					{ 
-						$where_command  = $where_command .' AND '; 
-						$group_by_command = $group_by_command.', ';
-					}
+					$order_count++;
 				}
-				$order_count = 0;
-				for($i=0; $i<count($columns); $i++)
+				if($i != count($columns)-1)
+				{ 
+					$select_command = $select_command.', ';
+				}
+			}
+			if($order_by_command !== ' ORDER BY ')
+			{
+				$select_command = $select_command.' FROM '.$table.' WHERE '.$drilldown_hierarchy_condition.$where_command.$group_by_command.$order_by_command;
+			}
+			else
+			{
+				$select_command = $select_command.' FROM '.$table.' WHERE '.$drilldown_hierarchy_condition.$where_command.$group_by_command;
+			}
+			$table_rows = Yii::app()->db->createCommand($select_command)->queryAll();
+			//echo $select_command;
+			
+			if(count($table_rows) != 0)
+			{
+				switch($_POST['chartCollapse'])
 				{
-					$select_command = $select_command.'sum('.$columns[$i].') "'.$columns[$i].'"';
-					if($_POST[$columns[$i].'_sort'] !== 'NONE')
-					{
-						if($order_count === 0)
+					case 'Collapse':
+						switch($_POST['viewMode'])
 						{
-							$order_by_command = $order_by_command.''.$columns[$i].' '.$_POST[$columns[$i].'_sort'];
+							case 'table':
+								$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'bar':
+								$this->renderBarView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'line':
+								$this->renderLineView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'pie':
+								$this->renderPieView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'bubble':
+								$this->renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'area':
+								$this->renderAreaView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
 						}
-						else
+						break;
+					case 'Do Not Collapse':
+						switch($_POST['viewMode'])
 						{
-							$order_by_command = $order_by_command.', '.$columns[$i].' '.$_POST[$columns[$i].'_sort'];
+							case 'table':
+								$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'bar':
+								$this->renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'line':
+								$this->renderNoCollapseLineView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'pie':
+								$this->renderNoCollapsePieView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'bubble':
+								$this->renderNoCollapseBubbleView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
+							case 'area':
+								$this->renderNoCollapseAreaView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id, $isAjax);
+								break;
 						}
-						$order_count++;
-					}
-					if($i != count($columns)-1)
-					{ 
-						$select_command = $select_command.', ';
-					}
+						break;
 				}
-				if($order_by_command !== ' ORDER BY ')
-				{
-					$select_command = $select_command.' FROM '.$table.' WHERE '.$drilldown_hierarchy_condition.$where_command.$group_by_command.$order_by_command;
-				}
-				else
-				{
-					$select_command = $select_command.' FROM '.$table.' WHERE '.$drilldown_hierarchy_condition.$where_command.$group_by_command;
-				}
-				$table_rows = Yii::app()->db->createCommand($select_command)->queryAll();
-				//echo $select_command;
-				
-				if(count($table_rows) != 0)
-				{
-					switch($_POST['chartCollapse'])
-					{
-						case 'Collapse':
-							switch($_POST['viewMode'])
-							{
-								case 'table':
-									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id);
-									break;
-								case 'bar':
-									$this->renderBarView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'line':
-									$this->renderLineView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'pie':
-									$this->renderPieView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'bubble':
-									$this->renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'area':
-									$this->renderAreaView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-							}
-							break;
-						case 'Do Not Collapse':
-							switch($_POST['viewMode'])
-							{
-								case 'table':
-									$this->renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure->measure_id);
-									break;
-								case 'bar':
-									$this->renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'line':
-									$this->renderNoCollapseLineView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'pie':
-									$this->renderNoCollapsePieView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'bubble':
-									$this->renderNoCollapseBubbleView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-								case 'area':
-									$this->renderNoCollapseAreaView($table_rows, $columns, $column_name, $rows, $row_name);
-									break;
-							}
-							break;
-					}
-				}
-				else
-				{
-					echo '<div id="comment-on-data">No Data Found!</div>';
-				}
+			}
+			else
+			{
+				echo '<div id="comment-on-data">No Data Found!</div>';
 			}
 		}
 		catch(Exception $exception) {
@@ -617,7 +619,7 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderNoCollapseAreaView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderNoCollapseAreaView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -673,7 +675,7 @@ Class MainController extends CController
 		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 	}
 	
-	function renderAreaView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderAreaView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 	
@@ -721,7 +723,7 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderNoCollapseBubbleView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderNoCollapseBubbleView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 	
@@ -804,7 +806,7 @@ Class MainController extends CController
 		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 	}
 	
-	function renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name)
+	function renderBubbleView($table, $table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 	
@@ -880,7 +882,7 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderNoCollapsePieView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderNoCollapsePieView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -940,7 +942,7 @@ Class MainController extends CController
 		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 	}
 	
-	function renderPieView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderPieView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -993,7 +995,7 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderNoCollapseLineView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderNoCollapseLineView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -1056,7 +1058,7 @@ Class MainController extends CController
 		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image">';
 	}
 	
-	function renderLineView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderLineView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -1112,7 +1114,7 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderNoCollapseBarView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -1182,7 +1184,7 @@ Class MainController extends CController
 		echo '<img src="'.$plot->EncodeImage().'" alt="Plot Image" usemap="#map">';
 	}
 	
-	function renderBarView($table_rows, $columns, $column_name, $rows, $row_name)
+	function renderBarView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		require_once 'chart/phplot.php';
 		
@@ -1254,14 +1256,14 @@ Class MainController extends CController
 		}
 	}
 	
-	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id)
+	function renderTableView($table_rows, $columns, $column_name, $rows, $row_name, $measure_id, $isAjax)
 	{
 		//echo $measure_id;
-		echo '<table>';
+		echo '<table style="font-family: Arial;font-size: 13px;border: 1px solid #7e7e7e;background-color: #f5f5f5;border-collapse: collapse;">';
 		echo '<tr>';
 		for($i=0; $i<count($rows); $i++)
 		{
-			echo '<th>'.$row_name[$i].'</th>';
+			echo '<th style="text-align: center;border: 1px solid #7e7e7e;padding: 5px;height: 25px;">'.$row_name[$i].'</th>';
 		}
 		for($i=0; $i<count($columns); $i++)
 		{
@@ -1291,7 +1293,7 @@ Class MainController extends CController
 				$operation = '<div id="drill-operation"><div id="not-roll-up"></div><div id="drill-down" cell="column" type="'.($column_dimension->column_data_type).'" distance="'.($column_hierarchy->distance_level).'" isbottom="'.($column_hierarchy->bottom_flag).'" isTop="'.($column_hierarchy->top_flag).'" columnId="'.($column_hierarchy->category_id).'" columnname="'.$column_name[$i].'" onclick="columnDrillDown(this)"></div></div>';
 			}
 			
-			echo '<th class="drill-down">'.$column_name[$i].$operation.'</th>';
+			echo '<th class="drill-down" style="text-align: center;border: 1px solid #7e7e7e;padding: 5px;height: 25px;">'.$column_name[$i].$operation.'</th>';
 		}
 		echo '</tr>';
 		foreach($table_rows as $table_row)
@@ -1325,11 +1327,11 @@ Class MainController extends CController
 					$operation = '<div id="drill-operation"><div id="not-roll-up"></div><div id="drill-down" cell="row" type="'.($row_dimension->row_data_type).'" distance="'.($row_hierarchy->distance_level).'" isbottom="'.($row_hierarchy->bottom_flag).'" isTop="'.($row_hierarchy->top_flag).'" rowId="'.($row_hierarchy->category_id).'" rowname="'.$rows[$i].'" rowdata="'.$table_row[$rows[$i]].'" onclick="rowDrillDown(this)"></div></div>';
 				}
 				
-				echo '<td class="drill-down">'.$table_row[$rows[$i]].$operation.'</td>';
+				echo '<td class="drill-down" style="background-color: white;border: 1px solid #7e7e7e;padding: 5px;height: 25px;">'.$table_row[$rows[$i]].$operation.'</td>';
 			}
 			for($i=0; $i<count($columns); $i++)
 			{
-				echo '<td>'.$table_row[$columns[$i]].'</td>';
+				echo '<td style="border: 1px solid #7e7e7e;background-color: white;padding: 5px;height: 25px;">'.$table_row[$columns[$i]].'</td>';
 			}
 			echo '</tr>';
 		}

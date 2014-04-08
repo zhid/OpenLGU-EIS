@@ -16,11 +16,11 @@ Class DatacaptureController extends CController
 		return array (
 			array ('deny',
 				'actions'=>array('capture'),
-				'users'=>array('?'),
+				'roles'=>array('LCE'),
 			),
 			array ('allow',
 				'actions'=>array('capture'),
-				'users'=>array('@'),
+				'roles'=>array('admin', 'dataencoder'),
 			),
 		);
 	}

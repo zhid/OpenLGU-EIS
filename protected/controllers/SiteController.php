@@ -2,6 +2,9 @@
 
 class SiteController extends Controller
 {
+	public $breadcrumbs;
+	public $loginError;
+
 	/**
 	 * Declares class-based actions.
 	 */
@@ -29,7 +32,43 @@ class SiteController extends Controller
 	{
 		// renders the view file 'protected/views/site/index.php'
 		// using the default layout 'protected/views/layouts/main.php'
-		$this->render('index');
+		//$this->render('login');
+		$model = new LoginConfirmation();
+		
+		if(Yii::app()->user->isGuest == false)
+		{
+			$url = $this->createUrl('/main');
+			$this->redirect($url);
+		}
+		
+		if(isset($_POST['LoginConfirmation']))
+		{
+			$model->username = $_POST['LoginConfirmation']['username'];
+			$model->password = $_POST['LoginConfirmation']['password'];
+		
+			if($model->validate())
+			{
+				$this->loginError = $model->authenticate($model->username, $model->password);
+				
+				if($this->loginError == "NONE")
+				{
+					if(Yii::app()->user->roles == 'admin' || Yii::app()->user->roles == 'LCE')
+					{
+						$url = $this->createUrl('/main');
+						$this->redirect($url);
+					}
+					else
+					{
+						$url = $this->createUrl('/datacapture/capture?page=1');
+						$this->redirect($url);
+					}
+				}
+			}
+		}
+		
+		$breadcrumbs = "";
+		
+		$this->render('login', array('model'=>$model));
 	}
 
 	/**

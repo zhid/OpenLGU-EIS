@@ -7,6 +7,11 @@
  * @property string $username
  * @property string $password
  * @property string $role
+ * @property integer $area_id
+ * @property integer $userid
+ *
+ * The followings are the available model relations:
+ * @property Area $area
  */
 class UserIdentification extends CActiveRecord
 {
@@ -27,12 +32,13 @@ class UserIdentification extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('username, password', 'required'),
+			array('area_id', 'numerical', 'integerOnly'=>true),
 			array('username', 'length', 'max'=>50),
 			array('password', 'length', 'max'=>10),
 			array('role', 'length', 'max'=>30),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('username, password, role', 'safe', 'on'=>'search'),
+			array('username, password, role, area_id, userid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -44,6 +50,7 @@ class UserIdentification extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'area' => array(self::BELONGS_TO, 'Area', 'area_id'),
 		);
 	}
 
@@ -56,6 +63,8 @@ class UserIdentification extends CActiveRecord
 			'username' => 'Username',
 			'password' => 'Password',
 			'role' => 'Role',
+			'area_id' => 'Area',
+			'userid' => 'Userid',
 		);
 	}
 
@@ -80,6 +89,8 @@ class UserIdentification extends CActiveRecord
 		$criteria->compare('username',$this->username,true);
 		$criteria->compare('password',$this->password,true);
 		$criteria->compare('role',$this->role,true);
+		$criteria->compare('area_id',$this->area_id);
+		$criteria->compare('userid',$this->userid);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

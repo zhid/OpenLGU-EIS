@@ -21,7 +21,8 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
-					'Settings'=>array('settings/listofareas'),
+					'Settings'=>array('settings/edituserinfo'),
+					'Areas'=>array('settings/listofareas'),
 					''.$area->area_name.''=>array('settings/areaoverview?areaid='.$area->area_id),
 					''.$measure->measure_name.''=>array('/settings/measureoverview?areaid='.($area->area_id).'&measureid='.($measure->measure_id)),
 					'Row Hierarchy',

@@ -565,7 +565,7 @@
 	font-size: 13px;
 	color: #3a4045;
 }
-#edit-data-area input[type="text"], #edit-data-area input[type="number"]
+#edit-data-area input[type="text"], #edit-data-area input[type="number"], #edit-data-area input[type="password"]
 {
 	font-family: Arial;
 	border: 1px solid #414146;

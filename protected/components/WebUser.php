@@ -29,10 +29,10 @@ class WebUser extends CWebUser
         }
 		
         $role = $this->getState("roles");
-        if ($role === 'admin') 
+        /*if ($role === 'admin') 
 		{
             return true;
-        }
+        }*/
        
         return ($operation === $role);
     }

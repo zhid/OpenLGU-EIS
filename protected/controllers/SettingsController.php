@@ -15,24 +15,14 @@ Class SettingsController extends CController
 	public function accessRules()
 	{
 		return array (
-			/*array ('deny',
-				'actions'=>array('listofareas', 'addnewarea'),
-				'users'=>array('?'),
-			),
-			array('deny',
-				'actions'=>array('search', 'areaoverview', 'editarea', 'addnewmeasure'),
-				'users'=>array('?'),
-			),
-			array('deny',
-				'actions'=>array('removeformsession', 'createmeasure'),
-				'users'=>array('*'),
-			),*/
 			array ('allow',
-				'actions'=>array('listofareas', 'search', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure'),
+				'actions'=>array('listofareas', 'searcharea', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure', 'removeformsession', 'createmeasure', 'listofmeasures', 'searchmeasure','measureoverview', 'editmeasure', 'addrowdimension', 'addcolumndimension', 'deletearea', 'deletemeasure', 'createcolumnhierarchy', 'createrowhierarchy',
+					'listthresholds', 'addthresholds', 'deletethreshold', 'deleteUser', 'adduser'),
 				'roles'=>array('admin'),
 			),
 			array ('deny',
-				'actions'=>array('listofareas', 'search', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure'),
+				'actions'=>array('listofareas', 'searcharea', 'addnewarea', 'areaoverview', 'editarea', 'addnewmeasure', 'removeformsession', 'createmeasure', 'listofmeasures', 'searchmeasure','measureoverview', 'editmeasure', 'addrowdimension', 'addcolumndimension', 'deletearea', 'deletemeasure', 'createcolumnhierarchy', 'createrowhierarchy',
+					'listthresholds', 'addthresholds', 'deletethreshold', 'deleteUser', 'adduser'),
 				'roles'=>array('LCE', 'dataencoder'),
 			),
 		);
@@ -1928,6 +1918,54 @@ Class SettingsController extends CController
 		}
 	
 		$this->render('deleteuser', array('area_array'=>$area_array, 'users'=>$users, 'pages'=>$pages, 'count'=>$count));
+	}
+	
+	function actionEdituserinfo()
+	{
+		$model = new EditUser();
+		
+		if(isset($_POST['EditUser']))
+		{
+			$model->username = $_POST['EditUser']['username'];
+			$model->password = $_POST['EditUser']['password'];
+			$model->retype_password = $_POST['EditUser']['retype_password'];
+			
+			if($model->validate())
+			{
+				$criteria = new CDbCriteria();
+				$criteria->select = '*';
+				$criteria->condition = 'userid=:userid';
+				$criteria->params = array(':userid'=>Yii::app()->user->userid);
+				$user = UserIdentification::model()->find($criteria);
+			
+				$user->username = $model->username;
+				$user->password = $model->password;
+				
+				if($user->save())
+				{
+					Yii::app()->user->setFlash('edituser_success', "User information has been edited!");
+					$this->refresh();
+				}
+				else
+				{
+					Yii::app()->user->setFlash('edituser_failed', "Editing user information failed!");
+				}
+			}
+		}
+		else
+		{
+			$criteria = new CDbCriteria();
+			$criteria->select = 'username, password';
+			$criteria->condition = 'userid=:userid';
+			$criteria->params = array(':userid'=>Yii::app()->user->userid);
+			$user = UserIdentification::model()->find($criteria);
+		
+			$model->username = $user->username;
+			$model->password = $user->password;
+			$model->retype_password = $user->password;
+		}
+		
+		$this->render('edituser', array('model'=>$model));
 	}
 	
 	function actionAdduser()

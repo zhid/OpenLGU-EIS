@@ -21,6 +21,7 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
+					'Settings'=>array('settings/edituserinfo'),
 					'Add User',
 				),
 				'homeLink'=>false,

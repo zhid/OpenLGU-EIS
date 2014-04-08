@@ -60,6 +60,30 @@
 </div>
 
 <div id="dashboard-side">
+	<?php
+		/*echo CHtml::beginForm(array('main/querydata'), 'POST', array('name'=>'queryDataForm'));
+			echo CHtml::hiddenField('chartCollapse', '', array('id'=>'chartCollapse'));
+			echo CHtml::hiddenField('measureId', '', array('id'=>'measureId'));
+			echo CHtml::hiddenField('columnName', '', array('id'=>'columnName'));
+			echo CHtml::hiddenField('columnDistanceLevel', '', array('id'=>'columnDistanceLevel'));
+			echo CHtml::hiddenField('columnParentId', '', array('id'=>'columnParentId'));
+			echo CHtml::hiddenField('columnParentValue', '', array('id'=>'columnParentValue'));
+			echo CHtml::hiddenField('rowName', '', array('id'=>'rowName'));
+			echo CHtml::hiddenField('rowDistanceLevel', '', array('id'=>'rowDistanceLevel'));
+			echo CHtml::hiddenField('rowParentId', '', array('id'=>'rowParentId'));
+			echo CHtml::hiddenField('rowParentValue', '', array('id'=>'rowParentValue'));
+			echo CHtml::hiddenField('viewMode', '', array('id'=>'viewMode'));
+			
+			echo '<div id="column_sort_container">';
+			echo '</div>';
+			
+			echo '<div id="row_values_container">';
+			echo '</div>';
+			
+			echo CHtml::submitButton('Save Dashboard');
+		echo CHtml::endForm();*/
+	?>
+
 	<div id="chart-collapse">
 		<form id="chartCollapsable" name="chartCollapsable">
 			<select name="collapseType" onchange="chartCollapse(this)">

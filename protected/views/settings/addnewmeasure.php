@@ -21,7 +21,8 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
-					'Settings'=>array('settings/listofareas'),
+					'Settings'=>array('settings/edituserinfo'),
+					'Areas'=>array('settings/listofareas'),
 					''.$area->area_name.''=>array('/settings/areaoverview?areaid='.$area_id),
 					'Add New Measure',
 				),

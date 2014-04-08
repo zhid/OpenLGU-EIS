@@ -8,7 +8,7 @@
 return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
 	'name'=>'OpenLGU - Executive Information System',
-	'defaultController'=>'loginconfirmation',
+	//'defaultController'=>'loginconfirmation',
 
 	// preloading 'log' component
 	'preload'=>array('log'),
@@ -64,7 +64,7 @@ return array(
 		'db'=>array(
 			'connectionString' => 'pgsql:host=localhost;port=5432;dbname=eis',
 			'emulatePrepare' => true,
-			'username' => 'postgres',
+			'username' => 'openlgu',
 			'password' => 'openlgu',
 			'charset' => 'utf8',
 		),

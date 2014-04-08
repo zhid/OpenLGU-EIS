@@ -22,6 +22,7 @@ class UserAuthentication extends CUserIdentity
 			$this->setState('username', $record->username);
 			$this->setState('roles', $record->role);
 			$this->setState('area_id', $record->area_id);
+			$this->setState('userid', $record->userid);
 			$this->setState('isGuest', false);
 			$this->errorCode = self::ERROR_NONE;
 		}

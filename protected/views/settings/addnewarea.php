@@ -29,6 +29,8 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
+					'Settings'=>array('settings/edituserinfo'),
+					'Areas'=>array('settings/listofareas'),
 					'Add New Area',
 				),
 				'homeLink'=>false,

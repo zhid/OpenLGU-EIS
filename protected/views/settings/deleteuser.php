@@ -59,7 +59,8 @@
 		<?php
 			$this->widget('zii.widgets.CBreadcrumbs', array(
 				'links'=>array(
-					'Settings',
+					'Settings'=>array('settings/edituserinfo'),
+					'Delete User',
 				),
 				'homeLink'=>false,
 			));
